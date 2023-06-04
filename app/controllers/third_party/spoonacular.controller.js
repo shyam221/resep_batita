@@ -21,12 +21,12 @@ exports.findAllRecipe = (req, res) => {
       params.maxCalories = req.query.jumlahKkl ? req.query.jumlahKkl : ''
     }
     
-    const { size, page } = req.query;
+    const { size, page, sort } = req.query;
     const offset = size * (page - 1);
 
     params.offset = offset;
     params.type = "soup";
-    params.sort = "popularity";
+    params.sort = sort ? "popularity" : '';
     params.sortDirection = "asc";
     params.apiKey = apiKey;
 
