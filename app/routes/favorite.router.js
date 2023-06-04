@@ -3,7 +3,7 @@ module.exports = app => {
   const router = require('express').Router()
 
   router.post('/add', favorite.addToFavorite)
-  router.delete('/remove', favorite.deleteFavorite)
+  router.delete('/remove/:id', favorite.deleteFavorite)
   router.get('/get/:id', favorite.getFavorite)
   router.get('/:userId/get', favorite.findAll)
 

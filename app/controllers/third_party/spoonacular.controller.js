@@ -1,8 +1,10 @@
 const axios = require("axios");
 const { success } = require("../../base/response.base");
 const { bayiTypeOne, bayiTypeTwo } = require('../../constant/bayi_type')
-const { detailRecipeRes } = require('../../constant/response/recipe.constant')
+const { detailRecipeRes, listRecipeRes } = require('../../constant/response/recipe.constant')
 const apiKey = '413053c9db5b4415bf7a36216ac867c1'
+const db = require('../../model')
+const Favorite = db.favorites
 
 exports.findAllRecipe = (req, res) => {
   try {
@@ -20,7 +22,7 @@ exports.findAllRecipe = (req, res) => {
     }
     
     const { size, page } = req.query;
-    const offset = size * page;
+    const offset = size * (page - 1);
 
     params.offset = offset;
     params.type = "soup";
@@ -33,8 +35,19 @@ exports.findAllRecipe = (req, res) => {
         params: params,
       })
       .then((data) => {
+        console.log(data.data)
         const a = data.data.results
-        res.status(200).json(success("success", a, 200));
+        const hasNext = data.data.totalResults - data.data.offset
+        const nextPage = hasNext > size ? parseInt(page) + 1 : null
+        const prevPage = page == 0 ? null : parseInt(page) - 1 
+        const mappedRecipe = listRecipeRes(a, Favorite)
+        const resData = {
+          nextPage: nextPage,
+          prevPage: prevPage != 0 ? prevPage : null,
+          totalItem: hasNext,
+          content: mappedRecipe
+        }
+        res.status(200).json(success("success", resData, 200));
       })
       .catch((err) => {
         res

@@ -1,10 +1,20 @@
-exports.listRecipeRes = (data) => {
-  return {
-    id: data.id,
-    title: data.title,
-    image: data.image,
-    nutrition: data.nutrition
-  }
+exports.listRecipeRes = (data, favorite) => {
+
+  const listResep = []
+  data.forEach(el => {
+    const liked = favorite.count({
+      where: { idResep: el.id }
+    })
+    const resep = {
+      id: el.id,
+      title: el.title,
+      image: el.image,
+      liked: parseInt(liked, 10) ? liked : 0,
+      nutrition: el.nutrition
+    }
+    listResep.push(resep)
+  })
+  return listResep
 }
 
 exports.detailRecipeRes = (data) => {
