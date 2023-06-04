@@ -1,14 +1,19 @@
-exports.listRecipeRes = (data, favorite) => {
+exports.listRecipeRes = (data, favorite, userId) => {
 
   const listResep = []
   data.forEach(el => {
     const liked = favorite.count({
       where: { idResep: el.id }
     })
+    const isLikedByUser = favorite.findOne({ where: { userId: userId, idResep: el.id }})
+      .then(data => {
+        return data
+      })
     const resep = {
       id: el.id,
       title: el.title,
       image: el.image,
+      isLiked: isLikedByUser ? true : false,
       liked: parseInt(liked, 10) ? liked : 0,
       nutrition: el.nutrition
     }

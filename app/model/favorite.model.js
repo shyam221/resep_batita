@@ -10,6 +10,9 @@ module.exports = (sequelize, Sequelize) => {
     },
     jumlahKkl: {
       type: Sequelize.STRING
+    },
+    image: {
+      type: Sequelize.STRING
     }
   })
   return Favorite

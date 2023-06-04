@@ -4,6 +4,7 @@ module.exports = app => {
 
   router.post('/add', favorite.addToFavorite)
   router.delete('/remove/:id', favorite.deleteFavorite)
+  router.delete('/remove/:userId/:resepId', favorite.deleteFavoriteByUserAndResep)
   router.get('/get/:id', favorite.getFavorite)
   router.get('/:userId/get', favorite.findAll)
 

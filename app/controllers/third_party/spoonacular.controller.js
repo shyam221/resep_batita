@@ -8,20 +8,19 @@ const Favorite = db.favorites
 
 exports.findAllRecipe = (req, res) => {
   try {
-    const umurBayi = req.query.umur;
+    const { umurBayi, beratBadan, size, page, sort, userId } = req.query;
     var params;
-    if (umurBayi) {
-      if (umurBayi >= 0 || umurBayi <= 5) {
+    if (umurBayi || beratBadan) {
+      if ((umurBayi >= 0 || umurBayi <= 5) || beratBadan <= 6) {
         params = bayiTypeOne;
-      } else if (umurBayi >= 6 || umurBayi <= 11) {
+      } else if ((umurBayi >= 6 || umurBayi <= 11) || (beratBadan > 6 || beratBadan <= 9)) {
         params = bayiTypeTwo;
       }
     } else {
       params = bayiTypeTwo
       params.maxCalories = req.query.jumlahKkl ? req.query.jumlahKkl : ''
     }
-    
-    const { size, page, sort } = req.query;
+  
     const offset = size * (page - 1);
 
     params.offset = offset;
@@ -40,7 +39,7 @@ exports.findAllRecipe = (req, res) => {
         const hasNext = data.data.totalResults - data.data.offset
         const nextPage = hasNext > size ? parseInt(page) + 1 : 0
         const prevPage = page == 0 ? 0 : parseInt(page) - 1 
-        const mappedRecipe = listRecipeRes(a, Favorite)
+        const mappedRecipe = listRecipeRes(a, Favorite, userId)
         const resData = {
           nextPage: nextPage,
           prevPage: prevPage != 0 ? prevPage : null,
