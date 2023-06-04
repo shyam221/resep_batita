@@ -38,13 +38,13 @@ exports.findAllRecipe = (req, res) => {
         console.log(data.data)
         const a = data.data.results
         const hasNext = data.data.totalResults - data.data.offset
-        const nextPage = hasNext > size ? parseInt(page) + 1 : null
-        const prevPage = page == 0 ? null : parseInt(page) - 1 
+        const nextPage = hasNext > size ? parseInt(page) + 1 : 0
+        const prevPage = page == 0 ? 0 : parseInt(page) - 1 
         const mappedRecipe = listRecipeRes(a, Favorite)
         const resData = {
           nextPage: nextPage,
           prevPage: prevPage != 0 ? prevPage : null,
-          totalItem: hasNext,
+          totalItems: hasNext,
           content: mappedRecipe
         }
         res.status(200).json(success("success", resData, 200));

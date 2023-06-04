@@ -37,7 +37,7 @@ exports.findAll = (req, res) => {
   const userId = req.params.userId
   const { page, size } = req.query
 
-  const { limit, offset } = getPagination(page, size)
+  const { limit, offset } = getPagination(page - 1, size)
 
   Favorite.findAndCountAll({ where: { userId: userId }, limit, offset })
     .then(data => {
