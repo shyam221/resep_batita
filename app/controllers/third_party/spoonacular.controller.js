@@ -10,15 +10,21 @@ exports.findAllRecipe = (req, res) => {
   try {
     const { umurBayi, beratBadan, size, page, sort, userId } = req.query;
     var params;
-    if (umurBayi || beratBadan) {
-      if ((umurBayi >= 0 || umurBayi <= 5) || beratBadan <= 6) {
+    if (umurBayi) {
+      if ((umurBayi >= 0 || umurBayi <= 5)) {
         params = bayiTypeOne;
-      } else if ((umurBayi >= 6 || umurBayi <= 11) || (beratBadan > 6 || beratBadan <= 9)) {
+      } else if ((umurBayi >= 6 || umurBayi <= 11)) {
+        params = bayiTypeTwo;
+      }
+    } else if (beratBadan) {
+      if (beratBadan <= 6) {
+        params = bayiTypeOne;
+      } else if (beratBadan > 6 || beratBadan <= 9) {
         params = bayiTypeTwo;
       }
     } else {
       params = bayiTypeTwo
-      params.maxCalories = req.query.jumlahKkl ? req.query.jumlahKkl : ''
+      params.maxCalories = req.query.jumlahKkl ? req.query.jumlahKkl : '1000'
     }
   
     const offset = size * (page - 1);
@@ -49,6 +55,7 @@ exports.findAllRecipe = (req, res) => {
         res.status(200).json(success("success", resData, 200));
       })
       .catch((err) => {
+        console.log(err)
         res
           .status(500)
           .json(
