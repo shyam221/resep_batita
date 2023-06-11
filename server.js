@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+global.__basedir = __dirname;
 
 const app = express();
 
@@ -27,12 +28,13 @@ app.use(express.urlencoded({ extended: true }));
 
 // simple route
 app.get("/", (req, res) => {
-  res.json({ message: "Welcome to bezkoder application." });
+  res.json({ message: "Welcome" });
 });
 
 require('./app/routes/user.router')(app)
 require('./app/routes/favorite.router')(app)
-require('./app/routes/spoonacular.router')(app)
+// require('./app/routes/spoonacular.router')(app)
+require('./app/routes/resep.router')(app)
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;

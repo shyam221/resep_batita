@@ -21,6 +21,31 @@ exports.register = (req, res) => {
     })
 }
 
+exports.updateUser = (req, res) => {
+  const id = req.params.id
+  
+  const update = {}
+  if (req.body.nama && req.body.nama !== '') {
+    update.nama = req.body.nama
+  }
+  if (req.body.nomor && req.body.nomor !== '') {
+    update.nomor = req.body.nomor
+  }
+  if (req.body.password && req.body.password !== '') {
+    update.password = req.body.password
+  }
+
+  User.update(update, { 
+    where: {
+      id: id
+    }
+   }).then(data => {
+     res.status(200).json(success('Success', data, '200'))
+   }).catch(err => {
+     res.status(500).json(success(err.message || 'Terjadi error saat ', '', 500))
+   })
+}
+
 exports.login = (req, res) => {
   if (!req.body.nama && !req.body.password) {
     res.status(400).json(success('Username & Password salah', '', 400))

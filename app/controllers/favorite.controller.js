@@ -9,18 +9,14 @@ const {
 
 exports.addToFavorite = (req, res) => {
   if (
-    !req.body.idResep &&
-    !req.body.userId &&
-    !req.body.nama &&
-    !req.body.jumlahKkl
+    !req.body.resepId &&
+    !req.body.userId
   ) {
     res.status(400).json(success("Field required", "", 400));
     return;
   }
   const favorite = {
-    idResep: req.body.idResep,
-    nama: req.body.nama,
-    jumlahKkl: req.body.jumlahKkl,
+    resepId: req.body.resepId,
     userId: req.body.userId,
   };
   Favorite.create(favorite)

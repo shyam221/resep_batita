@@ -21,11 +21,11 @@ db.sequelize = sequelize;
 
 db.users = require("./user.model.js")(sequelize, Sequelize);
 db.favorites = require("./favorite.model.js")(sequelize, Sequelize)
+db.resep = require('./resep.model.js')(sequelize, Sequelize)
 
-db.users.hasMany(db.favorites, { as: 'favorites' })
-db.favorites.belongsTo(db.users, {
-  foreignKey: 'userId',
-  as: 'user'
-})
+db.users.hasMany(db.favorites)
+db.favorites.belongsTo(db.users)
+db.resep.hasMany(db.favorites)
+db.favorites.belongsTo(db.resep)
 
 module.exports = db;
