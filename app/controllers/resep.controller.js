@@ -65,7 +65,7 @@ exports.getAllResep = (req, res) => {
     rekomendasi = 1
   } else if (umur >= 6 || umur <= 11) {
     rekomendasi = 2
-  } else {
+  } else if (umur >= 12) {
     rekomendasi = 3
   }
 
@@ -73,9 +73,9 @@ exports.getAllResep = (req, res) => {
     rekomendasi = 1
   } else if (beratBadan > 6 || beratBadan <= 9) {
     rekomendasi = 2
-  } else {
+  } else if (beratBadan > 10) {
     rekomendasi = 3
-  }
+  } 
   
   const filter = {}
   switch (rekomendasi) {
