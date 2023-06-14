@@ -7,6 +7,7 @@ module.exports = app => {
   router.post('/update/:id', upload.single('file'), resep.updateResep)
   router.get('/get', resep.getAllResep)
   router.get('/get/:id', resep.getResep)
+  router.get('/get/favorited/:userId', resep.getResepFavorited)
 
   app.use('/api/resep', router)
 }

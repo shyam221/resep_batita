@@ -10,11 +10,15 @@ exports.paginationData = (data, page, limit) => {
   const { count: totalItems, rows: con } = data
   const content = []
   for (a of con) {
-    const o = a
+    let o = a
     if (a.image) {
       let imgBase64 = Buffer.from(a.image).toString('base64');
       // imgBase64 = `data:image/jpeg;base64,${imgBase64}`;
       o.image = `data:image/jpeg;base64,${imgBase64}`
+    }
+    if (a.favorites) {
+      let isFavorited = a.favorites.length > 0 ? true : false
+      o.isFavorited = isFavorited
     }
     content.push(o)
   }
