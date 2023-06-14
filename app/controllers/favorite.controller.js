@@ -19,6 +19,7 @@ exports.addToFavorite = (req, res) => {
     resepId: req.body.resepId,
     userId: req.body.userId,
   };
+  console.log(favorite)
   Favorite.create(favorite)
     .then((data) => {
       res.status(200).json(success("Success", data, 200));

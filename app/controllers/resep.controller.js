@@ -56,6 +56,55 @@ exports.getResep = (req, res) => {
   })
 }
 
+exports.getResepFavorited = (req, res) => {
+  const { page, size } = req.query;
+  const userId = req.params.userId
+  const { limit, offset } = getPagination(page - 1, size);
+  if (!userId) {
+    res.status(400).json(success('ID not found', '', 404))
+    return;
+  }
+  Resep.findAndCountAll({
+    // where: {
+    //   '$favorites.userId$': {
+    //     [Op.eq] : userId
+    //   }
+    // },
+    include: [
+      {
+      model: Favorite,
+      required: true,
+      as: 'favorites',
+      subQuery: false,
+      where: {
+        userId: {
+          [Op.eq] : userId
+        }
+      }
+    }
+    ],
+    attributes: [
+      'id',
+      'nama',
+      'bahanBahan',
+      'caraPembuatan',
+      'energi',
+      'karbohidrat',
+      'lemak',
+      'protein',
+      'porsi',
+      'image',
+    ],
+    limit,
+    offset
+  }).then((data) => {
+    const response = paginationData(data, page, limit);
+    res.status(200).json(success('Success', response, '200'))
+  }).catch(err => {
+    res.status(500).json(success('Terjadi error saat ' + err.message, '', 500))
+  })
+}
+
 exports.getAllResep = (req, res) => {
   const { page, size, userId, beratBadan, umur } = req.query;
   let rekomendasi = req.query.rekomendasi
@@ -67,6 +116,8 @@ exports.getAllResep = (req, res) => {
     rekomendasi = 2
   } else if (umur >= 12) {
     rekomendasi = 3
+  } else {
+    rekomendasi = 3
   }
 
   if (beratBadan <= 6) {
@@ -75,7 +126,9 @@ exports.getAllResep = (req, res) => {
     rekomendasi = 2
   } else if (beratBadan > 10) {
     rekomendasi = 3
-  } 
+  } else {
+    rekomendasi = 3
+  }
   
   const filter = {}
   switch (rekomendasi) {
@@ -146,7 +199,6 @@ exports.getAllResep = (req, res) => {
     limit,
     offset
   }).then((data) => {
-    console.log(data)
     const response = paginationData(data, page, limit);
     res.status(200).json(success('Success', response, '200'))
   }).catch(err => {
