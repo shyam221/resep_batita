@@ -1,5 +1,8 @@
 const db = require("../model");
 const Favorite = db.favorites;
+const User = db.users;
+const Resep = db.resep;
+
 const Op = db.Sequelize.Op;
 const {
   success,
@@ -8,10 +11,7 @@ const {
 } = require("../base/response.base");
 
 exports.addToFavorite = (req, res) => {
-  if (
-    !req.body.resepId &&
-    !req.body.userId
-  ) {
+  if (!req.body.resepId && !req.body.userId) {
     res.status(400).json(success("Field required", "", 400));
     return;
   }
@@ -19,7 +19,7 @@ exports.addToFavorite = (req, res) => {
     resepId: req.body.resepId,
     userId: req.body.userId,
   };
-  console.log(favorite)
+  console.log(favorite);
   Favorite.create(favorite)
     .then((data) => {
       res.status(200).json(success("Success", data, 200));
@@ -62,12 +62,38 @@ exports.deleteFavoriteByUserAndResep = (req, res) => {
 };
 
 exports.findAll = (req, res) => {
-  const userId = req.params.userId;
-  const { page, size } = req.query;
+  const { page, size, search } = req.query;
 
   const { limit, offset } = getPagination(page - 1, size);
 
-  Favorite.findAndCountAll({ where: { userId: userId }, limit, offset })
+  Favorite.findAndCountAll({
+    include: [
+      {
+        model: User,
+        required: true,
+        as: "user",
+        attributes: ["nama"],
+      },
+      {
+        model: Resep,
+        required: true,
+        as: "resep",
+        attributes: ["nama", "energi"],
+      },
+    ],
+    where: {
+      [Op.or]: {
+        "$user.nama$": {
+          [Op.like]: "%" + search + "%",
+        },
+        "$resep.nama$": {
+          [Op.like]: "%" + search + "%",
+        },
+      },
+    },
+    limit,
+    offset,
+  })
     .then((data) => {
       const response = paginationData(data, page, limit);
       res.status(200).json(success("Success", response, "200"));
@@ -82,7 +108,20 @@ exports.findAll = (req, res) => {
 exports.getFavorite = (req, res) => {
   const id = req.params.id;
 
-  Favorite.findByPk(id)
+  Favorite.findByPk(id, {
+    include: [
+      {
+        model: User,
+        required: true,
+        as: "user",
+      },
+      {
+        model: Resep,
+        required: true,
+        as: "resep",
+      },
+    ],
+  })
     .then((data) => {
       res.status(200).json(success("Success", data, 200));
     })
