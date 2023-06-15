@@ -35,6 +35,7 @@ require('./app/routes/user.router')(app)
 require('./app/routes/favorite.router')(app)
 // require('./app/routes/spoonacular.router')(app)
 require('./app/routes/resep.router')(app)
+require('./app/routes/admin.router')(app)
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;

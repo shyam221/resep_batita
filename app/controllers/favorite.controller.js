@@ -11,10 +11,7 @@ const {
 } = require("../base/response.base");
 
 exports.addToFavorite = (req, res) => {
-  if (
-    !req.body.resepId &&
-    !req.body.userId
-  ) {
+  if (!req.body.resepId && !req.body.userId) {
     res.status(400).json(success("Field required", "", 400));
     return;
   }
@@ -22,7 +19,7 @@ exports.addToFavorite = (req, res) => {
     resepId: req.body.resepId,
     userId: req.body.userId,
   };
-  console.log(favorite)
+  console.log(favorite);
   Favorite.create(favorite)
     .then((data) => {
       res.status(200).json(success("Success", data, 200));
@@ -69,27 +66,34 @@ exports.findAll = (req, res) => {
 
   const { limit, offset } = getPagination(page - 1, size);
 
-  Favorite.findAndCountAll({ include: [
-    {
-      model: User,
-      required: true,
-      as: "users",
-    },
-    {
-      model: Resep,
-      required: true,
-      as: 'resep'
-    }
-  ], where: {
-    [Op.or]: {
-      '$users.nama$': {
-        [Op.like]: search
+  Favorite.findAndCountAll({
+    include: [
+      {
+        model: User,
+        required: true,
+        as: "user",
+        attributes: ["nama"],
       },
-      '$resep.nama$': {
-        [Op.like]: search
-      }
-    }
-  }, limit, offset })
+      {
+        model: Resep,
+        required: true,
+        as: "resep",
+        attributes: ["nama", "energi"],
+      },
+    ],
+    where: {
+      [Op.or]: {
+        "$user.nama$": {
+          [Op.like]: "%" + search + "%",
+        },
+        "$resep.nama$": {
+          [Op.like]: "%" + search + "%",
+        },
+      },
+    },
+    limit,
+    offset,
+  })
     .then((data) => {
       const response = paginationData(data, page, limit);
       res.status(200).json(success("Success", response, "200"));
@@ -109,14 +113,14 @@ exports.getFavorite = (req, res) => {
       {
         model: User,
         required: true,
-        as: "users",
+        as: "user",
       },
       {
         model: Resep,
         required: true,
-        as: 'resep'
-      }
-    ]
+        as: "resep",
+      },
+    ],
   })
     .then((data) => {
       res.status(200).json(success("Success", data, 200));

@@ -37,13 +37,15 @@ exports.updateResep = (req, res) => {
     },
   })
     .then((data) => {
-      fs.writeFileSync(
-        __basedir + "/resources/static/assets/tmp/" + data.imageName,
-        data.image
-      );
-      res.status(200).json(success("Success", data, "200"));
+      console.log(data)
+      // fs.writeFileSync(
+      //   __basedir + "/resources/static/assets/tmp/" + data.imageName,
+      //   data.image
+      // );
+      res.status(200).json(success("Success", null, "200"));
     })
     .catch((err) => {
+      console.log(err)
       res
         .status(500)
         .json(success("Terjadi error saat " + err.message, "", 500));

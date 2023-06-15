@@ -5,7 +5,7 @@ module.exports = app => {
   router.post('/register', user.register)
   router.post('/login', user.login)
   router.get('/get/:id', user.getById)
-  router.get('/get/all', user.getAll)
+  router.get('/get', user.getAllUser)
   router.delete('/delete/:id', user.delete)
   router.post('/update/:id', user.updateUser)
 

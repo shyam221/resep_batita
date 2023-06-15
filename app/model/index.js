@@ -22,6 +22,7 @@ db.sequelize = sequelize;
 db.users = require("./user.model.js")(sequelize, Sequelize);
 db.favorites = require("./favorite.model.js")(sequelize, Sequelize)
 db.resep = require('./resep.model.js')(sequelize, Sequelize)
+db.admin = require('./admin.model.js')(sequelize, Sequelize)
 
 db.users.hasMany(db.favorites, { foreignKey: 'userId' })
 db.favorites.belongsTo(db.users, { foreignKey: 'userId' })
