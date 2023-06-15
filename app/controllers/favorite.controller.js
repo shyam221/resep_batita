@@ -53,7 +53,7 @@ exports.deleteFavorite = (req, res) => {
 exports.deleteFavoriteByUserAndResep = (req, res) => {
   const { userId, resepId } = req.params;
 
-  Favorite.destroy({ where: { userId: userId, idResep: resepId } })
+  Favorite.destroy({ where: { userId: userId, resepId: resepId } })
     .then((data) => {
       res.status(200).json(success("Success", null, "200"));
     })

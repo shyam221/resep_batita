@@ -124,25 +124,27 @@ exports.getAllResep = (req, res) => {
   const { page, size, userId, beratBadan, umur } = req.query;
   let rekomendasi = req.query.rekomendasi;
   const { limit, offset } = getPagination(page - 1, size);
-
-  if (umur >= 0 || umur <= 5) {
-    rekomendasi = 1;
-  } else if (umur >= 6 || umur <= 11) {
-    rekomendasi = 2;
-  } else if (umur >= 12) {
-    rekomendasi = 3;
-  } else {
-    rekomendasi = 3;
+  
+  if (umur) {
+    if (umur >= 0 && umur <= 5) {
+      rekomendasi = 1
+    } else if (umur >= 6 && umur <= 11) {
+      rekomendasi = 2
+    } else if (umur >= 12) {
+      rekomendasi = 3
+    }
   }
 
-  if (beratBadan <= 6) {
-    rekomendasi = 1;
-  } else if (beratBadan > 6 || beratBadan <= 9) {
-    rekomendasi = 2;
-  } else if (beratBadan > 10) {
-    rekomendasi = 3;
-  } else {
-    rekomendasi = 3;
+  if (beratBadan) {
+    if (beratBadan <= 6) {
+      rekomendasi = 1
+    } else if (beratBadan > 6 && beratBadan <= 9) {
+      rekomendasi = 2
+    } else if (beratBadan > 10) {
+      rekomendasi = 3
+    } else {
+      rekomendasi = 3
+    }
   }
 
   const filter = {};
@@ -167,6 +169,12 @@ exports.getAllResep = (req, res) => {
       filter.lemak = 45;
       break;
     default:
+      if (!umur && !beratBadan) {
+        filter.energi = 1350
+        filter.protein = 20
+        filter.karbohidrat = 215
+        filter.lemak = 45
+      }
       break;
   }
 
@@ -224,6 +232,22 @@ exports.getAllResep = (req, res) => {
         .json(success("Terjadi error saat " + err.message, "", 500));
     });
 };
+
+exports.delete = (req, res) => {
+  const id = req.params.id
+
+  if (!id) {
+    res.status(400).json(success('Not found', null, 400))
+    return;
+  }
+
+  Resep.destroy({ where: { id: id } })
+    .then((_) => {
+      res.status(200).json(success('Success', null, 200))
+    }).catch((e) => {
+      res.status(500).json(success(e.message, null, 500))
+    })
+}
 
 const bodyReq = (req) => {
   const body = {
