@@ -1,5 +1,8 @@
 const db = require("../model");
 const Favorite = db.favorites;
+const User = db.users;
+const Resep = db.resep;
+
 const Op = db.Sequelize.Op;
 const {
   success,
@@ -62,12 +65,31 @@ exports.deleteFavoriteByUserAndResep = (req, res) => {
 };
 
 exports.findAll = (req, res) => {
-  const userId = req.params.userId;
-  const { page, size } = req.query;
+  const { page, size, search } = req.query;
 
   const { limit, offset } = getPagination(page - 1, size);
 
-  Favorite.findAndCountAll({ where: { userId: userId }, limit, offset })
+  Favorite.findAndCountAll({ include: [
+    {
+      model: User,
+      required: true,
+      as: "users",
+    },
+    {
+      model: Resep,
+      required: true,
+      as: 'resep'
+    }
+  ], where: {
+    [Op.or]: {
+      '$users.nama$': {
+        [Op.like]: search
+      },
+      '$resep.nama$': {
+        [Op.like]: search
+      }
+    }
+  }, limit, offset })
     .then((data) => {
       const response = paginationData(data, page, limit);
       res.status(200).json(success("Success", response, "200"));
@@ -82,7 +104,20 @@ exports.findAll = (req, res) => {
 exports.getFavorite = (req, res) => {
   const id = req.params.id;
 
-  Favorite.findByPk(id)
+  Favorite.findByPk(id, {
+    include: [
+      {
+        model: User,
+        required: true,
+        as: "users",
+      },
+      {
+        model: Resep,
+        required: true,
+        as: 'resep'
+      }
+    ]
+  })
     .then((data) => {
       res.status(200).json(success("Success", data, 200));
     })
