@@ -214,6 +214,22 @@ exports.getAllResep = (req, res) => {
   })
 }
 
+exports.delete = (req, res) => {
+  const id = req.params.id
+
+  if (!id) {
+    res.status(400).json(success('Not found', null, 400))
+    return;
+  }
+
+  Resep.destroy({ where: { id: id } })
+    .then((_) => {
+      res.status(200).json(success('Success', null, 200))
+    }).catch((e) => {
+      res.status(500).json(success(e.message, null, 500))
+    })
+}
+
 const bodyReq = (req) => {
   const body = {
     nama: req.body.nama,

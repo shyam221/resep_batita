@@ -1,7 +1,7 @@
 const db = require('../model')
 const User = db.users;
 const Op = db.Sequelize.Op
-const { success } = require('../base/response.base')
+const { success, paginationData } = require('../base/response.base')
 
 exports.register = (req, res) => {
   if (!req.body.nama && !req.body.password) {
@@ -70,13 +70,54 @@ exports.getById = (req, res) => {
     })
 }
 
+exports.getAll = (req, res) => {
+  const { search, page, size } = req.query.search
+  const { limit, offset } = getPagination(page - 1, size);
+
+  User.findAndCountAll(
+    {
+      where: {
+        [Op.or]: {
+          nama: {
+            [Op.like]: '%' + search + '%'
+          },
+          nomor: {
+            [Op.like]: '%' + search + '%'
+          }
+        }
+      }
+    },
+    limit,
+    offset
+  ).then((data) => {
+    res.status(200).json(success('Success', paginationData(data, page, limit), 200))
+  })
+  .catch((err) => {
+    res
+      .status(500)
+      .json(success(err.message || "Terjadi error saat fetch data", "", 500));
+  });
+}
+
 // exports.update = (req, res) => {
 
 // }
 
-// exports.delete = (req, res) => {
+exports.delete = (req, res) => {
+  const id = req.params.id
 
-// }
+  if (!id) {
+    res.status(400).json(success('Not found', null, 400))
+    return;
+  }
+
+  User.destroy({ where: { id: id } })
+    .then((_) => {
+      res.status(200).json(success('Success', null, 200))
+    }).catch((e) => {
+      res.status(500).json(success(e.message, null, 500))
+    })
+}
 
 // exports.deleteAll = (req, res) => {
 
