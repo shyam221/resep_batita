@@ -6,16 +6,24 @@ const { success,
   paginationData,} = require("../base/response.base");
 
 exports.register = (req, res) => {
-  if (!req.body.nama && !req.body.password) {
+  if (!req.body.email && !req.body.password) {
     res
       .status(400)
-      .json(success("Nama & Password tidak boleh kosong", "", 400));
+      .json(success("Email & Password tidak boleh kosong", "", 400));
     return;
+  }
+  let roleUser
+  if (req.body.role && req.body.role !== '') {
+    roleUser = req.body.role
+  } else {
+    roleUser = 'USER'
   }
   const register = {
     nama: req.body.nama,
     password: req.body.password,
     nomor: req.body.nomor,
+    email: req.body.email,
+    role: roleUser
   };
   User.create(register)
     .then((data) => {
@@ -41,6 +49,12 @@ exports.updateUser = (req, res) => {
   if (req.body.password && req.body.password !== "") {
     update.password = req.body.password;
   }
+  if (req.body.email && req.body.email !== "") {
+    update.email = req.body.email;
+  }
+  if (req.body.role && req.body.role !== "") {
+    update.role = req.body.role;
+  }
 
   User.update(update, {
     where: {
@@ -58,11 +72,11 @@ exports.updateUser = (req, res) => {
 };
 
 exports.login = (req, res) => {
-  if (!req.body.nama && !req.body.password) {
+  if (!req.body.email && !req.body.password) {
     res.status(400).json(success("Username & Password salah", "", 400));
     return;
   }
-  User.findOne({ where: { nama: req.body.nama, password: req.body.password } })
+  User.findOne({ where: { email: req.body.email, password: req.body.password } })
     .then((data) => {
       res.status(200).json(success("Success", data, "200"));
     })
@@ -72,6 +86,22 @@ exports.login = (req, res) => {
         .json(success(err.message || "Terjadi error saat ", "", 500));
     });
 };
+
+exports.loginAdmin = (req, res) => {
+  if (!req.body.email && !req.body.password) {
+    res.status(400).json(success("Username & Password salah", "", 400));
+    return;
+  }
+  User.findOne({ where: { email: req.body.email, password: req.body.password } })
+    .then((data) => {
+      res.status(200).json(success("Success", data, "200"));
+    })
+    .catch((err) => {
+      res
+        .status(500)
+        .json(success(err.message || "Terjadi error saat ", "", 500));
+    });
+}
 
 exports.getById = (req, res) => {
   const id = req.params.id;
@@ -101,6 +131,9 @@ exports.getAllUser = (req, res) => {
         'nomor': {
           [Op.like]: "%" + search + "%",
         },
+        'email': {
+          [Op.like]: '%' + search + '%'
+        }
       },
     },
     limit,

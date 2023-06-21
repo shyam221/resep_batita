@@ -29,6 +29,12 @@ module.exports = (sequelize, Sequelize) => {
     },
     imageName: {
       type: Sequelize.STRING
+    },
+    umur: {
+      type: Sequelize.STRING
+    },
+    beratBadan: {
+      type: Sequelize.STRING
     }
   })
   return Resep

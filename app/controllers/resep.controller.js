@@ -107,6 +107,8 @@ exports.getResepFavorited = (req, res) => {
       "protein",
       "porsi",
       "image",
+      "umur",
+      "beratBadan"
     ],
     limit,
     offset,
@@ -123,81 +125,22 @@ exports.getResepFavorited = (req, res) => {
 };
 
 exports.getAllResep = (req, res) => {
-  const { page, size, userId, beratBadan, umur } = req.query;
-  let rekomendasi = req.query.rekomendasi;
+  const { page, size, userId, search } = req.query;
   const { limit, offset } = getPagination(page - 1, size);
-  
-  if (umur) {
-    if (umur >= 0 && umur <= 5) {
-      rekomendasi = 1
-    } else if (umur >= 6 && umur <= 11) {
-      rekomendasi = 2
-    } else if (umur >= 12) {
-      rekomendasi = 3
-    }
-  }
-
-  if (beratBadan) {
-    if (beratBadan <= 6) {
-      rekomendasi = 1
-    } else if (beratBadan > 6 && beratBadan <= 9) {
-      rekomendasi = 2
-    } else if (beratBadan > 10) {
-      rekomendasi = 3
-    } else {
-      rekomendasi = 3
-    }
-  }
-
-  const filter = {};
-  switch (rekomendasi) {
-    case 1:
-      filter.energi = 550;
-      filter.protein = 9;
-      filter.karbohidrat = 59;
-      filter.lemak = 31;
-      break;
-
-    case 2:
-      filter.energi = 800;
-      filter.protein = 15;
-      filter.karbohidrat = 105;
-      filter.lemak = 35;
-      break;
-    case 3:
-      filter.energi = 1350;
-      filter.protein = 20;
-      filter.karbohidrat = 215;
-      filter.lemak = 45;
-      break;
-    default:
-      if (!umur && !beratBadan) {
-        filter.energi = 1350
-        filter.protein = 20
-        filter.karbohidrat = 215
-        filter.lemak = 45
-      }
-      break;
-  }
 
   Resep.findAndCountAll({
     where: {
-      [Op.and]: [
-        {
-          energi: {
-            [Op.lte]: filter.energi,
-          },
-          protein: {
-            [Op.lte]: filter.protein,
-          },
-          karbohidrat: {
-            [Op.lte]: filter.karbohidrat,
-          },
-          lemak: {
-            [Op.lte]: filter.lemak,
-          },
+      [Op.or]: {
+        umur: {
+          [Op.like]: '%' + search + '%'
         },
-      ],
+        beratBadan: {
+          [Op.like]: '%' + search + '%'
+        },
+        nama: {
+          [Op.like]: '%' + search + '%'
+        },
+      }
     },
     include: {
       model: Favorite,
@@ -220,6 +163,8 @@ exports.getAllResep = (req, res) => {
       "protein",
       "porsi",
       "image",
+      "umur",
+      "beratBadan"
     ],
     limit,
     offset,
@@ -265,6 +210,8 @@ const bodyReq = (req) => {
     image: fs.readFileSync(
       __basedir + "/resources/static/assets/uploads/" + req.file.filename
     ),
+    umur: req.body.umur,
+    beratBadan: req.body.beratBadan
   };
   return body;
 };

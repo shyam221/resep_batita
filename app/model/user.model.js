@@ -6,6 +6,12 @@ module.exports = (sequelize, Sequelize) => {
     nomor: {
       type: Sequelize.STRING
     },
+    email: {
+      type: Sequelize.STRING
+    },
+    role: {
+      type: Sequelize.ENUM('ADMIN', 'USER')
+    },
     password: {
       type: Sequelize.STRING
     }
