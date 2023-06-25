@@ -12,7 +12,7 @@ module.exports = (sequelize, Sequelize) => {
     energi: {
       type: Sequelize.DOUBLE
     },
-    karbohidrat: {
+    karbohidrat: {  
       type: Sequelize.DOUBLE
     },
     lemak: {
@@ -28,6 +28,12 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.BLOB('long')
     },
     imageName: {
+      type: Sequelize.STRING
+    },
+    umur: {
+      type: Sequelize.STRING
+    },
+    beratBadan: {
       type: Sequelize.STRING
     }
   })

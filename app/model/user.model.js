@@ -6,6 +6,24 @@ module.exports = (sequelize, Sequelize) => {
     nomor: {
       type: Sequelize.STRING
     },
+    email: {
+      type: Sequelize.STRING
+    },
+    tanggalLahir: {
+      type: Sequelize.DATEONLY
+    },
+    beratBadan: {
+      type: Sequelize.INTEGER
+    },
+    fotoProfil: {
+      type: Sequelize.BLOB('long')
+    },
+    namaFotoProfil: {
+      type: Sequelize.STRING
+    },
+    role: {
+      type: Sequelize.ENUM('ADMIN', 'USER')
+    },
     password: {
       type: Sequelize.STRING
     }
