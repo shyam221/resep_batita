@@ -78,7 +78,7 @@ exports.findAll = (req, res) => {
         model: Resep,
         required: true,
         as: "resep",
-        attributes: ["nama", "energi"],
+        attributes: ["nama", "energi", "umur", "beratBadan"],
       },
     ],
     where: {

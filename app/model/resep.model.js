@@ -12,7 +12,7 @@ module.exports = (sequelize, Sequelize) => {
     energi: {
       type: Sequelize.DOUBLE
     },
-    karbohidrat: {
+    karbohidrat: {  
       type: Sequelize.DOUBLE
     },
     lemak: {

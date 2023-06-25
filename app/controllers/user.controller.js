@@ -1,4 +1,6 @@
 const db = require("../model");
+const fs = require("fs");
+const moment = require('moment')
 const User = db.users;
 const Op = db.Sequelize.Op;
 const { success,
@@ -6,10 +8,10 @@ const { success,
   paginationData,} = require("../base/response.base");
 
 exports.register = (req, res) => {
-  if (!req.body.email && !req.body.password) {
+  if (!req.body.nomor && !req.body.password) {
     res
       .status(400)
-      .json(success("Email & Password tidak boleh kosong", "", 400));
+      .json(success("No Hp & Password tidak boleh kosong", "", 400));
     return;
   }
   let roleUser
@@ -23,7 +25,9 @@ exports.register = (req, res) => {
     password: req.body.password,
     nomor: req.body.nomor,
     email: req.body.email,
-    role: roleUser
+    role: roleUser,
+    beratBadan: req.body.beratBadan,
+    tanggalLahir: moment(req.body.tanggalLahir, 'DD/MM/YYYY').format('YYYY/MM/DD')
   };
   User.create(register)
     .then((data) => {
@@ -55,6 +59,12 @@ exports.updateUser = (req, res) => {
   if (req.body.role && req.body.role !== "") {
     update.role = req.body.role;
   }
+  if (req.body.tanggalLahir && req.body.tanggalLahir !== "") {
+    update.tanggalLahir = moment(req.body.tanggalLahir, 'DD/MM/YYYY').format('YYYY/MM/DD')
+  }
+  if (req.body.beratBadan && req.body.beratBadan !== '') {
+    update.beratBadan = req.body.beratBadan
+  }
 
   User.update(update, {
     where: {
@@ -72,12 +82,15 @@ exports.updateUser = (req, res) => {
 };
 
 exports.login = (req, res) => {
-  if (!req.body.email && !req.body.password) {
-    res.status(400).json(success("Username & Password salah", "", 400));
+  if (!req.body.nomor && !req.body.password) {
+    res.status(400).json(success("No Hp & Password salah", "", 400));
     return;
   }
-  User.findOne({ where: { email: req.body.email, password: req.body.password } })
+  User.findOne({ where: { nomor: req.body.nomor, password: req.body.password } })
     .then((data) => {
+      const tanggal = moment(data.tanggalLahir, 'YYYY/MM/DD').format('DD/MM/YYYY')
+      console.log(tanggal)
+      data.tanggalLahir = moment(tanggal, 'DD/MM/YYYY')
       res.status(200).json(success("Success", data, "200"));
     })
     .catch((err) => {
@@ -89,7 +102,7 @@ exports.login = (req, res) => {
 
 exports.loginAdmin = (req, res) => {
   if (!req.body.email && !req.body.password) {
-    res.status(400).json(success("Username & Password salah", "", 400));
+    res.status(400).json(success("Email & Password salah", "", 400));
     return;
   }
   User.findOne({ where: { email: req.body.email, password: req.body.password } })
@@ -169,6 +182,40 @@ exports.delete = (req, res) => {
       res.status(500).json(success(e.message, null, 500));
     });
 };
+
+exports.updateFotoProfil = (req, res) => {
+  const id = req.params.id;
+  if (!id) {
+    res.status(400).json(success("Not found", null, 400));
+    return;
+  }
+  const body = {
+    namaFotoProfil: req.foto.orignalname,
+    fotoProfil: fs.readFileSync(
+      __basedir + "/resources/static/assets/uploads/" + req.foto.filename
+    )
+  }
+
+  User.update(body, {
+    where: {
+      id: id
+    }
+  })
+  .then((data) => {
+    console.log(data)
+    fs.writeFileSync(
+      __basedir + "/resources/static/assets/tmp/" + data.namaFotoProfil,
+      data.image
+    );
+    res.status(200).json(success("Success", null, "200"));
+  })
+  .catch((err) => {
+    console.log(err)
+    res
+      .status(500)
+      .json(success("Terjadi error saat " + err.message, "", 500));
+  });
+}
 
 // exports.deleteAll = (req, res) => {
 

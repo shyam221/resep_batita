@@ -3,6 +3,7 @@ const fs = require("fs");
 const Resep = db.resep;
 const Favorite = db.favorites;
 const Op = db.Sequelize.Op;
+const literal = db.Sequelize.literal
 
 const {
   success,
@@ -131,16 +132,68 @@ exports.getAllResep = (req, res) => {
   Resep.findAndCountAll({
     where: {
       [Op.or]: {
-        umur: {
-          [Op.like]: '%' + search + '%'
-        },
-        beratBadan: {
-          [Op.like]: '%' + search + '%'
-        },
         nama: {
           [Op.like]: '%' + search + '%'
         },
       }
+    },
+    include: {
+      model: Favorite,
+      required: false,
+      where: userId
+        ? {
+            userId: userId,
+          }
+        : {},
+      attributes: ["userId"],
+    },
+    attributes: [
+      "id",
+      "nama",
+      "bahanBahan",
+      "caraPembuatan",
+      "energi",
+      "karbohidrat",
+      "lemak",
+      "protein",
+      "porsi",
+      "image",
+      "umur",
+      "beratBadan"
+    ],
+    limit,
+    offset,
+  })
+    .then((data) => {
+      const response = paginationData(data, page, limit);
+      res.status(200).json(success("Success", response, "200"));
+    })
+    .catch((err) => {
+      res
+        .status(500)
+        .json(success("Terjadi error saat " + err.message, "", 500));
+    });
+};
+
+exports.getRekomendasiResep = (req, res) => {
+  const { page, size, userId, umur, beratBadan } = req.query;
+  const { limit, offset } = getPagination(page - 1, size);
+
+  Resep.findAndCountAll({
+    where: {
+      [Op.or]: [
+        beratBadan ? {
+          beratBadan: {
+            [Op.lte]: beratBadan
+          }
+        } : {},
+        umur ? {
+          [Op.and]: [
+              db.Sequelize.literal(`CONVERT(SUBSTRING_INDEX(umur, '-', 1), UNSIGNED) <= ${umur}`),
+              db.Sequelize.literal(`CONVERT(SUBSTRING_INDEX(umur, '-', -1), UNSIGNED) >= ${umur}`)
+            ]
+        } : {}
+      ]
     },
     include: {
       model: Favorite,
