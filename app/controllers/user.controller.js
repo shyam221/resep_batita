@@ -1,6 +1,7 @@
 const db = require("../model");
 const fs = require("fs");
 const moment = require('moment')
+const { sendEmail, emailOtp } = require('./send_email.controller')
 const User = db.users;
 const Op = db.Sequelize.Op;
 const { success,
@@ -31,6 +32,8 @@ exports.register = (req, res) => {
   };
   User.create(register)
     .then((data) => {
+      const emailTemplate = emailOtp(data.nama, generateOTP)
+      sendEmail('alice6@ethereal.com', data.email, 'Registrasi Akun', emailTemplate)
       res.status(200).json(success("Success", data, "200"));
     })
     .catch((err) => {
@@ -220,3 +223,13 @@ exports.updateFotoProfil = (req, res) => {
 // exports.deleteAll = (req, res) => {
 
 // }
+function generateOTP() {
+  // Declare a digits variable 
+  // which stores all digits
+  var digits = '0123456789';
+  let OTP = '';
+  for (let i = 0; i < 4; i++ ) {
+      OTP += digits[Math.floor(Math.random() * 10)];
+  }
+  return OTP;
+}
