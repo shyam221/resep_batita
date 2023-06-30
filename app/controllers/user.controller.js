@@ -21,6 +21,7 @@ exports.register = (req, res) => {
   } else {
     roleUser = 'USER'
   }
+  const otp = generateOTP
   const register = {
     nama: req.body.nama,
     password: req.body.password,
@@ -28,12 +29,15 @@ exports.register = (req, res) => {
     email: req.body.email,
     role: roleUser,
     beratBadan: req.body.beratBadan,
+    otp: otp,
+    isActive: roleUser === 'ADMIN' ? true : false,
     tanggalLahir: moment(req.body.tanggalLahir, 'DD/MM/YYYY').format('YYYY/MM/DD')
   };
+  
   User.create(register)
     .then((data) => {
-      const emailTemplate = emailOtp(data.nama, generateOTP)
-      sendEmail('alice6@ethereal.com', data.email, 'Registrasi Akun', emailTemplate)
+      const emailTemplate = emailOtp(data.nama, otp)
+      sendEmail('noreply@adminresepanak.com', data.email, 'Registrasi Akun', emailTemplate)
       res.status(200).json(success("Success", data, "200"));
     })
     .catch((err) => {
@@ -42,6 +46,23 @@ exports.register = (req, res) => {
         .json(success(err.message || "Terjadi error saat ", "", 500));
     });
 };
+
+exports.submitOtp = (req, res) => {
+  const { otp, email } = req.query;
+  
+  const user = User.findOne({ where: { email: email, otp: otp } })
+  if (user === null) {
+    res
+      .status(400)
+      .json(success("OTP tidak sesuai", "", 400));
+    return;
+  } else {
+    User.update({ isActive: true, otp: '' }, { where: { email: email, otp: otp } })
+      .then((data) => {
+        res.status(200).json(success("Success", data, "200"));
+      })
+  }
+}
 
 exports.updateUser = (req, res) => {
   const id = req.params.id;

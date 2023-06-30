@@ -11,6 +11,7 @@ module.exports = app => {
   router.delete('/delete/:id', user.delete)
   router.post('/update/:id', user.updateUser)
   router.post('/update-foto/:id', upload.single('foto'), user.updateFotoProfil)
+  router.post('/submit-otp', user.submitOtp)
 
   app.use('/api/user', router)
 }
