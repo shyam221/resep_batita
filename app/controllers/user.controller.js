@@ -69,9 +69,9 @@ exports.submitOtp = (req, res) => {
 }
 
 exports.resendOtp = async (req, res) => {
-  const { email } = req.query;
+  const { nomor } = req.query;
   
-  const user = await User.findOne({ where: { email: email } })
+  const user = await User.findOne({ where: { nomor: nomor } })
   if (user === null) {
     res
       .status(400)
@@ -81,7 +81,7 @@ exports.resendOtp = async (req, res) => {
     const otp = generateOTP()
     console.log(user)
     await emailOtp(user.nama, otp, user.email)
-    User.update({ isActive: false, otp: otp }, { where: { email: email } })
+    User.update({ isActive: false, otp: otp }, { where: { nomor: nomor } })
       .then((data) => {
         // sendEmail({ 
         //   from: 'noreply@kumpulanresepanak.com',
