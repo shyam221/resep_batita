@@ -21,7 +21,7 @@ exports.register = (req, res) => {
   } else {
     roleUser = 'USER'
   }
-  const otp = generateOTP
+  const otp = generateOTP()
   const register = {
     nama: req.body.nama,
     password: req.body.password,
@@ -37,7 +37,11 @@ exports.register = (req, res) => {
   User.create(register)
     .then((data) => {
       const emailTemplate = emailOtp(data.nama, otp)
-      sendEmail('noreply@adminresepanak.com', data.email, 'Registrasi Akun', emailTemplate)
+      sendEmail({ 
+        from: 'noreply@kumpulanresepanak.com',
+        to: data.email,
+        subject: 'Verifikasi Akun',
+        html: emailTemplate })
       res.status(200).json(success("Success", data, "200"));
     })
     .catch((err) => {
@@ -60,6 +64,31 @@ exports.submitOtp = (req, res) => {
     User.update({ isActive: true, otp: '' }, { where: { email: email, otp: otp } })
       .then((data) => {
         res.status(200).json(success("Success", data, "200"));
+      })
+  }
+}
+
+exports.resendOtp = async (req, res) => {
+  const { email } = req.query;
+  
+  const user = await User.findOne({ where: { email: email } })
+  if (user === null) {
+    res
+      .status(400)
+      .json(success("User tidak ditemukan", "", 400));
+    return;
+  } else {
+    const otp = generateOTP()
+    console.log(user)
+    await emailOtp(user.nama, otp, user.email)
+    User.update({ isActive: false, otp: otp }, { where: { email: email } })
+      .then((data) => {
+        // sendEmail({ 
+        //   from: 'noreply@kumpulanresepanak.com',
+        //   to: email,
+        //   subject: 'Verifikasi Akun',
+        //   html: emailTemplate })
+        res.status(200).json(success("Success", null, "200"));
       })
   }
 }
@@ -113,11 +142,20 @@ exports.login = (req, res) => {
   User.findOne({ where: { nomor: req.body.nomor, password: req.body.password } })
     .then((data) => {
       const tanggal = moment(data.tanggalLahir, 'YYYY/MM/DD').format('DD/MM/YYYY')
-      console.log(tanggal)
       data.tanggalLahir = moment(tanggal, 'DD/MM/YYYY')
-      res.status(200).json(success("Success", data, "200"));
+      console.log(tanggal)
+      
+      if (data.fotoProfil) {
+        let imgBase64 = Buffer.from(a.fotoProfil).toString('base64');
+        data.fotoProfil = `data:image/jpeg;base64,${imgBase64}`
+      }
+      if (data.isActive)
+        res.status(200).json(success("Success", data, "200"));
+      else
+        res.status(200).json(success("User belum aktif", null, 202));
     })
     .catch((err) => {
+      console.log(err)
       res
         .status(500)
         .json(success(err.message || "Terjadi error saat ", "", 500));
@@ -213,14 +251,15 @@ exports.updateFotoProfil = (req, res) => {
     res.status(400).json(success("Not found", null, 400));
     return;
   }
+  console.log(req.foto)
   const body = {
-    namaFotoProfil: req.foto.orignalname,
+    namaFotoProfil: req.foto.originalname,
     fotoProfil: fs.readFileSync(
       __basedir + "/resources/static/assets/uploads/" + req.foto.filename
     )
   }
 
-  User.update(body, {
+  User.update({ fotoProfil: body.fotoProfil, namaFotoProfil: body.namaFotoProfil }, {
     where: {
       id: id
     }

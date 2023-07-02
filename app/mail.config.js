@@ -1,12 +1,13 @@
-const nodemailer = require('nodemailer')
+const nodemailer = require("nodemailer");
 
-const transporter = nodemailer.createTransport({
-  host: 'smtp.ethereal.email',
-  port: '587',
+let transport = nodemailer.createTransport({
+  host: "sandbox.smtp.mailtrap.io",
+  port: 2525,
+  secure: false,
   auth: {
-    user: 'alice6@ethereal.email',
-    pass: 'FJM9eyF9TBSTCma2yj'
+    user: "55090b74ab88f1",
+    pass: "ce4af92c31a3a0"
   }
-})
+});
 
-module.exports = transporter
+module.exports.transporter = transport
