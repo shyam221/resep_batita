@@ -9,6 +9,7 @@ module.exports = app => {
   router.get('/get/:id', resep.getResep)
   router.get('/get/favorited/:userId', resep.getResepFavorited)
   router.delete('/delete/:id', resep.delete)
+  router.get('/rekomendasi/get', resep.getRekomendasiResep)
 
   app.use('/api/resep', router)
 }
