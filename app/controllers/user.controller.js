@@ -146,8 +146,9 @@ exports.login = (req, res) => {
       console.log(tanggal)
       
       if (data.fotoProfil) {
-        let imgBase64 = Buffer.from(a.fotoProfil).toString('base64');
+        const imgBase64 = Buffer.from(data.fotoProfil).toString('base64');
         data.fotoProfil = `data:image/jpeg;base64,${imgBase64}`
+        console.log(imgBase64)
       }
       if (data.isActive)
         res.status(200).json(success("Success", data, "200"));
@@ -183,6 +184,12 @@ exports.getById = (req, res) => {
 
   User.findByPk(id)
     .then((data) => {
+      const tanggal = moment(data.tanggalLahir, 'YYYY/MM/DD').format('DD/MM/YYYY')
+      data.tanggalLahir = moment(tanggal, 'DD/MM/YYYY')
+      if (data.fotoProfil) {
+        const imgBase64 = Buffer.from(data.fotoProfil).toString('base64');
+        data.fotoProfil = `data:image/jpeg;base64,${imgBase64}`
+      }
       res.status(200).json(success("Success", data, "200"));
     })
     .catch((err) => {
@@ -253,9 +260,9 @@ exports.updateFotoProfil = (req, res) => {
   }
   console.log(req.foto)
   const body = {
-    namaFotoProfil: req.foto.originalname,
+    namaFotoProfil: req.file.originalname,
     fotoProfil: fs.readFileSync(
-      __basedir + "/resources/static/assets/uploads/" + req.foto.filename
+      __basedir + "/resources/static/assets/uploads/" + req.file.filename
     )
   }
 
@@ -266,10 +273,10 @@ exports.updateFotoProfil = (req, res) => {
   })
   .then((data) => {
     console.log(data)
-    fs.writeFileSync(
-      __basedir + "/resources/static/assets/tmp/" + data.namaFotoProfil,
-      data.image
-    );
+    // fs.writeFileSync(
+    //   __basedir + "/resources/static/assets/tmp/" + data.namaFotoProfil,
+    //   data.image
+    // );
     res.status(200).json(success("Success", null, "200"));
   })
   .catch((err) => {

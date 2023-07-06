@@ -1,10 +1,14 @@
 const express = require("express");
 const cors = require("cors");
+var moment = require('moment-timezone');
+
 global.__basedir = __dirname;
 
 const app = express();
 
 const db = require("./app/model");
+
+moment().tz("Asia/Jakarta").format();
 
 db.sequelize.sync()
   .then(() => {
