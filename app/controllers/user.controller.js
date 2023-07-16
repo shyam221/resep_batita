@@ -1,12 +1,13 @@
 const db = require("../model");
 const fs = require("fs");
 const moment = require('moment')
-const { sendEmail, emailOtp } = require('./send_email.controller')
+const { emailOtp, forgotPasswordEmail } = require('./send_email.controller')
 const User = db.users;
 const Op = db.Sequelize.Op;
 const { success,
   getPagination,
   paginationData,} = require("../base/response.base");
+const { where } = require('sequelize');
 
 exports.register = (req, res) => {
   if (!req.body.nomor && !req.body.password) {
@@ -36,12 +37,7 @@ exports.register = (req, res) => {
   
   User.create(register)
     .then((data) => {
-      const emailTemplate = emailOtp(data.nama, otp)
-      sendEmail({ 
-        from: 'noreply@kumpulanresepanak.com',
-        to: data.email,
-        subject: 'Verifikasi Akun',
-        html: emailTemplate })
+      emailOtp(data.nama, otp)
       res.status(200).json(success("Success", data, "200"));
     })
     .catch((err) => {
@@ -69,9 +65,9 @@ exports.submitOtp = (req, res) => {
 }
 
 exports.resendOtp = async (req, res) => {
-  const { nomor } = req.query;
+  const { email } = req.query;
   
-  const user = await User.findOne({ where: { nomor: nomor } })
+  const user = await User.findOne({ where: { email: email } })
   if (user === null) {
     res
       .status(400)
@@ -81,13 +77,8 @@ exports.resendOtp = async (req, res) => {
     const otp = generateOTP()
     console.log(user)
     await emailOtp(user.nama, otp, user.email)
-    User.update({ isActive: false, otp: otp }, { where: { nomor: nomor } })
-      .then((data) => {
-        // sendEmail({ 
-        //   from: 'noreply@kumpulanresepanak.com',
-        //   to: email,
-        //   subject: 'Verifikasi Akun',
-        //   html: emailTemplate })
+    User.update({ isActive: false, otp: otp }, { where: { email: email } })
+      .then((_data) => {
         res.status(200).json(success("Success", null, "200"));
       })
   }
@@ -135,11 +126,11 @@ exports.updateUser = (req, res) => {
 };
 
 exports.login = (req, res) => {
-  if (!req.body.nomor && !req.body.password) {
-    res.status(400).json(success("No Hp & Password salah", "", 400));
+  if (!req.body.email && !req.body.password) {
+    res.status(400).json(success("Email & Password salah", "", 400));
     return;
   }
-  User.findOne({ where: { nomor: req.body.nomor, password: req.body.password } })
+  User.findOne({ where: { email: req.body.email, password: req.body.password } })
     .then((data) => {
       const tanggal = moment(data.tanggalLahir, 'YYYY/MM/DD').format('DD/MM/YYYY')
       data.tanggalLahir = moment(tanggal, 'DD/MM/YYYY')
@@ -251,6 +242,50 @@ exports.delete = (req, res) => {
       res.status(500).json(success(e.message, null, 500));
     });
 };
+
+exports.requestResetPassword = async (req, res) => {
+  const email = req.params.email;
+  if (!email) {
+    res.status(400).json(success("Not found", null, 400));
+    return;
+  }
+  const user = await User.findOne({ where: { email: email } })
+  if (user === null) {
+    res
+      .status(400)
+      .json(success("User tidak ditemukan", "", 400));
+    return;
+  } else {
+    const otp = generateOTP()
+    await forgotPasswordEmail(user.nama, otp, user.email)
+    User.update({ otpPassword: otp }, { where: { email: email } })
+      .then((_) => {
+        res.status(200).json(success("Success", null, 200))
+      })
+  }
+}
+
+exports.verifyOtpResetPassword = async (req, res) => {
+  const body = req.body
+  if (!body.email || !body.code) {
+    res.status(400).json(success("Not found", null, 400));
+    return;
+  }
+  const user = await User
+    .findOne({ where: { email: body.email, otpPassword: body.code } })
+  if (user === null) {
+    res
+      .status(400)
+      .json(success("Kode Verifikasi Salah", "", 400));
+    return;
+  } else {
+    User.update({ password: body.password, otpPassword: '' }, 
+      { where: { id: user.id } })
+        .then((_) => {
+          res.status(200).json(success("Success", "Reset password berhasil.", 200))
+      })
+  }
+}
 
 exports.updateFotoProfil = (req, res) => {
   const id = req.params.id;

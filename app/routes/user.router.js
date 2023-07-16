@@ -13,6 +13,8 @@ module.exports = app => {
   router.post('/update-foto/:id', upload.single('file'), user.updateFotoProfil)
   router.post('/submit-otp', user.submitOtp)
   router.post('/resend-otp', user.resendOtp)
+  router.post('/request-reset-password/:email', user.requestResetPassword)
+  router.post('/verify-reset-password', user.verifyOtpResetPassword)
 
   app.use('/api/user', router)
 }
