@@ -36,8 +36,9 @@ exports.register = (req, res) => {
   };
   
   User.create(register)
-    .then((data) => {
-      emailOtp(data.nama, otp)
+    .then(async (data) => {
+      const otp = generateOTP()
+      await emailOtp(data.nama, otp, data.email)
       res.status(200).json(success("Success", data, "200"));
     })
     .catch((err) => {
