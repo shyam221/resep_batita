@@ -1,4 +1,4 @@
-module.exports = app => {
+module.exports = app, recommender => {
   const resep = require('../controllers/resep.controller')
   const router = require('express').Router()
   const upload = require("../upload")
@@ -10,6 +10,7 @@ module.exports = app => {
   router.get('/get/favorited/:userId', resep.getResepFavorited)
   router.delete('/delete/:id', resep.delete)
   router.get('/rekomendasi/get', resep.getRekomendasiResep)
+  router.get('/content-based/:resepId', resep.contentBased({recommender: recommender}) )
 
   app.use('/api/resep', router)
 }
