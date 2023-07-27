@@ -181,11 +181,11 @@ exports.contentBased = function(recommender) {
     const obj = recommender.export
     const size = await Resep.count()
     if (obj.data) {
-      // if (size > obj.data.length) {
+      if (size > obj.data.length) {
         Resep.findAll().then((data) => {
           recommender.train(data)
         })
-      // }
+      }
     } else {
       await Resep.findAll({
         raw: true
