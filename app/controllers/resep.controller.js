@@ -175,34 +175,46 @@ exports.getAllResep = (req, res) => {
     });
 };
 
-exports.contentBased = async (req, res, recommender) => {
-  const resepId = req.params.resepId
-  const obj = recommender.export
-  const size = await Resep.count()
-  if (size > obj.data.length) {
-    Resep.findAll().then((data) => {
-      recommender.train(data)
+exports.contentBased = function(recommender) {
+  return async function(req, res) {
+    const resepId = req.params.resepId
+    const obj = recommender.export
+    const size = await Resep.count()
+    if (obj.data) {
+      // if (size > obj.data.length) {
+        Resep.findAll().then((data) => {
+          recommender.train(data)
+        })
+      // }
+    } else {
+      await Resep.findAll({
+        raw: true
+      }).then((data) => {
+        console.log(data)
+        recommender.train(data)
+      })
+    }
+    const similarDocuments = await recommender.getSimilarDocuments(resepId, 0, 10);
+    console.log(similarDocuments)
+    const idSimilarDocument = []
+    await similarDocuments.forEach(element => {
+      idSimilarDocument.push(element.id)
+    });
+
+    Resep.findAll({
+      where: {
+        id: {
+          [Op.in]: idSimilarDocument
+        }
+      }
+    }).then((data) => {
+      res.status(200).json(success("Success", data, "200"));
+    }).catch((err) => {
+      res
+          .status(500)
+          .json(success("Terjadi error saat " + err.message, "", 500));
     })
   }
-  const similarDocuments = await recommender.getSimilarDocuments(resepId, 0, 10);
-  const idSimilarDocument = []
-  await similarDocuments.array.forEach(element => {
-    idSimilarDocument.push(element.id)
-  });
-
-  Resep.findAll({
-    where: {
-      id: {
-        [Op.in]: idSimilarDocument
-      }
-    }
-  }).then((data) => {
-    res.status(200).json(success("Success", data, "200"));
-  }).catch((err) => {
-    res
-        .status(500)
-        .json(success("Terjadi error saat " + err.message, "", 500));
-  })
 }
 
 exports.getRekomendasiResep = (req, res) => {

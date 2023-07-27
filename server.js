@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const ContentBasedRecommender = require('./app/algorithm/ContentBasedRecommender')
 const recommender = new ContentBasedRecommender({
-  minScore: 0.1,
+  minScore: 0.07,
   maxSimilarDocuments: 100
 });
 

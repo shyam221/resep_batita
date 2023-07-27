@@ -86,8 +86,8 @@ class ContentBasedRecommender {
     for (let i = 0; i < documents.length; i += 1) {
       const document = documents[i];
 
-      if (!_.has(document, 'id') || !_.has(document, 'caraPembuatan')) {
-        throw new Error('Documents should be have fields id and caraPembuatan');
+      if (!_.has(document, 'id') || !_.has(document, 'bahanBahan')) {
+        throw new Error('Documents should be have fields id and bahanBahan');
       }
 
       if (_.has(document, 'tokens') || _.has(document, 'vector')) {
@@ -131,7 +131,7 @@ class ContentBasedRecommender {
     }
 
     const processedDocuments = documents.map(item => {
-      let tokens = this._getTokensFromString(item.caraPembuatan);
+      let tokens = this._getTokensFromString(item.bahanBahan);
       return {
         id: item.id,
         tokens,
