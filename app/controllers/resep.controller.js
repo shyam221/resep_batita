@@ -1,9 +1,14 @@
 const db = require("../model");
 const fs = require("fs");
 const Resep = db.resep;
+const DetailResep = db.detailResep
+const BahanResep = db.bahanResep
 const Favorite = db.favorites;
 const Op = db.Sequelize.Op;
 const literal = db.Sequelize.literal
+const {
+  detailResepRes
+} = require("../response/resep.response");
 
 const {
   success,
@@ -56,11 +61,24 @@ exports.updateResep = (req, res) => {
 exports.getResep = (req, res) => {
   const resepId = req.params.id;
 
-  Resep.findByPk(resepId)
-    .then((data) => {
+  Resep.findByPk(resepId, {
+    include: [
+      {
+        model: DetailResep,
+        required: true,
+        include: [
+            {
+              model: BahanResep
+            }
+        ]
+      }
+    ]
+  })
+    .then(async (data) => {
       let imgBase64 = Buffer.from(data.image).toString("base64");
-      const response = data;
-      response.image = `data:image/jpeg;base64,${imgBase64}`;
+      const image = await `data:image/jpeg;base64,${imgBase64}`;
+      
+      const response = detailResepRes(data, image);
       res.status(200).json(success("Success", response, "200"));
     })
     .catch((err) => {
@@ -96,20 +114,10 @@ exports.getResepFavorited = (req, res) => {
           },
         },
       },
-    ],
-    attributes: [
-      "id",
-      "nama",
-      "bahanBahan",
-      "caraPembuatan",
-      "energi",
-      "karbohidrat",
-      "lemak",
-      "protein",
-      "porsi",
-      "image",
-      "umur",
-      "beratBadan"
+      {
+        model: DetailResep,
+        required: true
+      }
     ],
     limit,
     offset,
@@ -137,35 +145,27 @@ exports.getAllResep = (req, res) => {
         },
       }
     },
-    include: {
-      model: Favorite,
-      required: false,
-      where: userId
-        ? {
-            userId: userId,
-          }
-        : {},
-      attributes: ["userId"],
-    },
-    attributes: [
-      "id",
-      "nama",
-      "bahanBahan",
-      "caraPembuatan",
-      "energi",
-      "karbohidrat",
-      "lemak",
-      "protein",
-      "porsi",
-      "image",
-      "umur",
-      "beratBadan"
+    include: [
+      {
+        model: Favorite,
+        required: false,
+        where: userId
+          ? {
+              userId: userId,
+            }
+          : {},
+        attributes: ["userId"],
+      },
+      {
+        model: DetailResep,
+        required: true
+      }
     ],
     limit,
     offset,
   })
-    .then((data) => {
-      const response = paginationData(data, page, limit);
+    .then(async (data) => {
+      const response = await paginationData(data, page, limit);
       res.status(200).json(success("Success", response, "200"));
     })
     .catch((err) => {
@@ -206,7 +206,13 @@ exports.contentBased = function(recommender) {
         id: {
           [Op.in]: idSimilarDocument
         }
-      }
+      },
+      include: [
+        {
+          model: DetailResep,
+          required: true
+        }
+      ]
     }).then((data) => {
       res.status(200).json(success("Success", data, "200"));
     }).catch((err) => {
@@ -237,29 +243,21 @@ exports.getRekomendasiResep = (req, res) => {
         } : {}
       ]
     },
-    include: {
-      model: Favorite,
-      required: false,
-      where: userId
-        ? {
-            userId: userId,
-          }
-        : {},
-      attributes: ["userId"],
-    },
-    attributes: [
-      "id",
-      "nama",
-      "bahanBahan",
-      "caraPembuatan",
-      "energi",
-      "karbohidrat",
-      "lemak",
-      "protein",
-      "porsi",
-      "image",
-      "umur",
-      "beratBadan"
+    include: [
+      {
+        model: Favorite,
+        required: false,
+        where: userId
+          ? {
+              userId: userId,
+            }
+          : {},
+        attributes: ["userId"],
+      },
+      {
+        model: DetailResep,
+        required: true
+      }
     ],
     limit,
     offset,

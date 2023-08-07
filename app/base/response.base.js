@@ -1,3 +1,8 @@
+
+const {
+  resepRes
+} = require("../response/resep.response");
+
 exports.success = (message, data, statusCode) => {
   return {
     errorCode: statusCode,
@@ -6,7 +11,7 @@ exports.success = (message, data, statusCode) => {
   }
 }
 
-exports.paginationData = (data, page, limit) => {
+exports.paginationData = async (data, page, limit) => {
   const { count: totalItems, rows: con } = data
   const content = []
   for (a of con) {
@@ -20,7 +25,7 @@ exports.paginationData = (data, page, limit) => {
       let isFavorited = a.favorites.length > 0 ? true : false
       o.isFavorited = isFavorited
     }
-    content.push(o)
+    await content.push(resepRes(o))
   }
   const currentPage = page ? +page : 0
   const totalPages = Math.ceil(totalItems / limit)
