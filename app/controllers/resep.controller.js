@@ -122,8 +122,8 @@ exports.getResepFavorited = (req, res) => {
     limit,
     offset,
   })
-    .then((data) => {
-      const response = paginationData(data, page, limit);
+    .then(async (data) => {
+      const response = await paginationData(data, page, limit);
       res.status(200).json(success("Success", response, "200"));
     })
     .catch((err) => {
@@ -231,14 +231,14 @@ exports.getRekomendasiResep = (req, res) => {
     where: {
       [Op.or]: [
         beratBadan ? {
-          beratBadan: {
+          '$detail_resep.beratBadan$': {
             [Op.lte]: beratBadan
           }
         } : {},
         umur ? {
           [Op.and]: [
-              db.Sequelize.literal(`CONVERT(SUBSTRING_INDEX(umur, '-', 1), UNSIGNED) <= ${umur}`),
-              db.Sequelize.literal(`CONVERT(SUBSTRING_INDEX(umur, '-', -1), UNSIGNED) >= ${umur}`)
+              db.Sequelize.literal(`CONVERT(SUBSTRING_INDEX(detail_resep.umur, '-', 1), UNSIGNED) <= ${umur}`),
+              db.Sequelize.literal(`CONVERT(SUBSTRING_INDEX(detail_resep.umur, '-', -1), UNSIGNED) >= ${umur}`)
             ]
         } : {}
       ]
@@ -262,8 +262,8 @@ exports.getRekomendasiResep = (req, res) => {
     limit,
     offset,
   })
-    .then((data) => {
-      const response = paginationData(data, page, limit);
+    .then(async (data) => {
+      const response = await paginationData(data, page, limit);
       res.status(200).json(success("Success", response, "200"));
     })
     .catch((err) => {

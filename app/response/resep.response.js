@@ -29,9 +29,17 @@ exports.detailResepRes = (resep, image) => {
   response.beratBadan = resep.detail_resep.beratBadan
   response.isFavorited = resep.isFavorited
   response.favorites = resep.favorites
-  response.bahanBahan = resep.detail_resep.bahan_reseps
   response.caraPembuatan = resep.detail_resep.caraPembuatan
+
+  const ingredients = []
+
+  for (bahan of resep.detail_resep.bahan_reseps ) {
+    ingredients.push(bahan.bahan_bahan)
+  }
+  
+  response.bahanBahan = ingredients
   response.image = image
+
 
   return response
 }
