@@ -13,42 +13,111 @@ const {
 const {
   success,
   getPagination,
-  paginationData,
+  paginationDataResep,
 } = require("../base/response.base");
 
-exports.createResep = (req, res) => {
-  const body = bodyReq(req);
-
-  Resep.create(body)
+exports.createResep = async (req, res) => {
+  const body = await bodyReq(req);
+  Resep.create({
+    nama: body.nama,
+    imageName: body.imageName,
+    image: body.image,
+  })
     .then((data) => {
-      fs.writeFileSync(
-        __basedir + "/resources/static/assets/tmp/" + data.imageName,
-        data.image
-      );
-      res.status(200).json(success("Success", data, "200"));
-    })
+        fs.writeFileSync(
+          __basedir + "/resources/static/assets/tmp/" + data.imageName,
+          data.image
+        );
+        DetailResep.create({
+          caraPembuatan: body.caraPembuatan,
+          energi: body.energi,
+          karbohidrat: body.karbohidrat,
+          lemak: body.lemak,
+          protein: body.protein,
+          porsi: body.porsi,
+          umur: body.umur,
+          beratBadan: body.beratBadan,
+          resepId: data.id,
+          
+        }).then(async (detail) => {
+          const bahanBahan = []
+          for (const bahan of JSON.parse(body.bahanBahan)) {
+            const bahanUpdate = bahan
+            bahanUpdate.detail_resep_id = detail.id
+            bahanBahan.push(bahanUpdate)
+          }
+          BahanResep.bulkCreate(bahanBahan)
+            .then((a) => {
+              console.log(a)
+              res.status(200).json(success("Success", detail, "200"));
+            }).catch((err) => {
+              console.error(err)
+              res
+                .status(500)
+                .json(success("Terjadi error saat " + err.message, "", 500));
+            })
+          })
+      })
     .catch((err) => {
+      console.error(err)
       res
         .status(500)
         .json(success("Terjadi error saat " + err.message, "", 500));
     });
 };
 
-exports.updateResep = (req, res) => {
-  const body = bodyReq(req);
+exports.updateResep = async (req, res) => {
+  const body = await bodyReq(req);
 
-  Resep.update(body, {
+  Resep.update({
+    nama: body.nama,
+    imageName: body.imageName,
+    image: body.image
+  }, {
     where: {
       id: req.params.id,
-    },
+    }
   })
     .then((data) => {
       console.log(data)
-      // fs.writeFileSync(
-      //   __basedir + "/resources/static/assets/tmp/" + data.imageName,
-      //   data.image
-      // );
-      res.status(200).json(success("Success", null, "200"));
+      DetailResep.update({
+        caraPembuatan: body.caraPembuatan,
+        energi: body.energi,
+        karbohidrat: body.karbohidrat,
+        lemak: body.lemak,
+        protein: body.protein,
+        porsi: body.porsi,
+        umur: body.umur,
+        beratBadan: body.beratBadan,
+        resepId: data.id,
+        
+      }, {
+        where: {
+          resepId: req.params.id
+        }
+      }).then(async (detail) => {
+        const bahanBahan = []
+        for (const bahan of JSON.parse(body.bahanBahan)) {
+          const bahanUpdate = bahan
+          bahanUpdate.detail_resep_id = req.body.detailResepId
+          bahanBahan.push(bahanUpdate)
+        }
+        await BahanResep.destroy({
+          where: {
+            detail_resep_id: req.body.detailResepId
+          }
+        })
+        BahanResep.bulkCreate(bahanBahan)
+          .then((a) => {
+            console.log(a)
+            res.status(200).json(success("Success", detail, "200"));
+          }).catch((err) => {
+            console.error(err)
+            res
+              .status(500)
+              .json(success("Terjadi error saat " + err.message, "", 500));
+          })
+        })
     })
     .catch((err) => {
       console.log(err)
@@ -123,7 +192,7 @@ exports.getResepFavorited = (req, res) => {
     offset,
   })
     .then(async (data) => {
-      const response = await paginationData(data, page, limit);
+      const response = await paginationDataResep(data, page, limit);
       res.status(200).json(success("Success", response, "200"));
     })
     .catch((err) => {
@@ -165,7 +234,7 @@ exports.getAllResep = (req, res) => {
     offset,
   })
     .then(async (data) => {
-      const response = await paginationData(data, page, limit);
+      const response = await paginationDataResep(data, page, limit);
       res.status(200).json(success("Success", response, "200"));
     })
     .catch((err) => {
@@ -263,7 +332,7 @@ exports.getRekomendasiResep = (req, res) => {
     offset,
   })
     .then(async (data) => {
-      const response = await paginationData(data, page, limit);
+      const response = await paginationDataResep(data, page, limit);
       res.status(200).json(success("Success", response, "200"));
     })
     .catch((err) => {
@@ -289,8 +358,8 @@ exports.delete = (req, res) => {
     })
 }
 
-const bodyReq = (req) => {
-  const body = {
+const bodyReq = async (req) => {
+  const body = await {
     nama: req.body.nama,
     bahanBahan: req.body.bahanBahan,
     caraPembuatan: req.body.caraPembuatan,
@@ -299,12 +368,14 @@ const bodyReq = (req) => {
     lemak: req.body.lemak,
     protein: req.body.protein,
     porsi: req.body.porsi,
-    imageName: req.file.originalname,
-    image: fs.readFileSync(
-      __basedir + "/resources/static/assets/uploads/" + req.file.filename
-    ),
     umur: req.body.umur,
     beratBadan: req.body.beratBadan
   };
+  if (req.file) {
+    body.imageName = req.file.originalname
+    body.image = fs.readFileSync(
+      __basedir + "/resources/static/assets/uploads/" + req.file.filename
+    )
+  }
   return body;
 };

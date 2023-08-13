@@ -208,9 +208,8 @@ exports.getAllUser = (req, res) => {
     limit,
     offset,
   })
-    .then((data) => {
-      const response = paginationData(data, page, limit)
-      console.log(data)
+    .then(async (data) => {
+      const response = await paginationData(data, page, limit)
       res
         .status(200)
         .json(success("Success", response, 200));
