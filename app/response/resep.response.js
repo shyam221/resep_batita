@@ -30,6 +30,7 @@ exports.detailResepRes = (resep, image) => {
   response.isFavorited = resep.isFavorited
   response.favorites = resep.favorites
   response.caraPembuatan = resep.detail_resep.caraPembuatan
+  response.detailResepId = resep.detail_resep.id
 
   const ingredients = []
 
