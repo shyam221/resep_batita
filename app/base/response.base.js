@@ -1,6 +1,7 @@
 
 const {
-  resepRes
+  resepRes,
+  resepResDetail
 } = require("../response/resep.response");
 
 exports.success = (message, data, statusCode) => {
@@ -33,6 +34,24 @@ exports.paginationDataResep = async (data, page, limit) => {
   const prevPage = currentPage != 1 ? Math.ceil(currentPage - 1) : 0
 
   return { totalItems, totalPages, currentPage, nextPage, prevPage, content }
+}
+
+exports.listDataResep = async (data) => {
+  const content = []
+  for (a of data) {
+    let o = a
+    if (a.image) {
+      // let imgBase64 = Buffer.from(a.image).toString('base64');
+      // // imgBase64 = `data:image/jpeg;base64,${imgBase64}`;
+      // o.image = `data:image/jpeg;base64,${imgBase64}`
+    }
+    if (a.favorites) {
+      let isFavorited = a.favorites.length > 0 ? true : false
+      o.isFavorited = isFavorited
+    }
+    await content.push(resepResDetail(o))
+  }
+  return content
 }
 
 exports.paginationData = async (data, page, limit) => {

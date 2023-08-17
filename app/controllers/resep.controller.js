@@ -14,6 +14,7 @@ const {
   success,
   getPagination,
   paginationDataResep,
+  listDataResep
 } = require("../base/response.base");
 
 exports.createResep = async (req, res) => {
@@ -253,17 +254,28 @@ exports.contentBased = function(recommender) {
     if (obj.data) {
       //jika data yang tersimpan tidak sama dengan yang di database, akan di import baru
       if (size > obj.data.length) {
-        Resep.findAll().then((data) => {
-          recommender.train(data)
+        Resep.findAll({include: [
+          {
+            model: DetailResep,
+            required: true
+          }
+        ]}).then(async (data) => {
+          const listResep = await listDataResep(data)
+          recommender.train(listResep)
         })
       }
     } else {
       // jika tidak ada data yang tersimpan, data akan di train
       await Resep.findAll({
-        raw: true
-      }).then((data) => {
-        console.log(data)
-        recommender.train(data)
+        include: [
+          {
+            model: DetailResep,
+            required: true
+          }
+        ]
+      }).then(async (data) => {
+        const listResep = await listDataResep(data)
+        recommender.train(listResep)
       })
     }
     // mengambil data yang berhasil di train, yang mempunyai kemiripan dengan resep berdasarkan id yang telah dikirimkan oleh user
@@ -288,7 +300,7 @@ exports.contentBased = function(recommender) {
         }
       ]
     }).then(async (data) => {
-      const response = await paginationDataResep(data, page, limit);
+      const response = await listDataResep(data);
       res.status(200).json(success("Success", response, "200"));
     }).catch((err) => {
       res
