@@ -29,7 +29,7 @@ exports.resepResDetail = (resep) => {
   response.beratBadan = resep.detail_resep.beratBadan
   response.isFavorited = resep.isFavorited
   response.favorites = resep.favorites
-  // response.image = resep.image
+  response.image = resep.image
   response.caraPembuatan = resep.detail_resep.caraPembuatan
 
   return response
