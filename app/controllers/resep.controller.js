@@ -249,13 +249,16 @@ exports.contentBased = function(recommender) {
     const resepId = req.params.resepId
     const obj = recommender.export
     const size = await Resep.count()
+    // mengecek data yang tersimpan di content based
     if (obj.data) {
+      //jika data yang tersimpan tidak sama dengan yang di database, akan di import baru
       if (size > obj.data.length) {
         Resep.findAll().then((data) => {
           recommender.train(data)
         })
       }
     } else {
+      // jika tidak ada data yang tersimpan, data akan di train
       await Resep.findAll({
         raw: true
       }).then((data) => {
@@ -263,13 +266,15 @@ exports.contentBased = function(recommender) {
         recommender.train(data)
       })
     }
+    // mengambil data yang berhasil di train, yang mempunyai kemiripan dengan resep berdasarkan id yang telah dikirimkan oleh user
     const similarDocuments = await recommender.getSimilarDocuments(resepId, 0, 10);
     console.log(similarDocuments)
     const idSimilarDocument = []
+    // jika ada data yang sama, id-id tersebut akan dimasukan ke dalam array
     await similarDocuments.forEach(element => {
       idSimilarDocument.push(element.id)
     });
-
+    // mencari data dengan id-id yang telah dimasukan ke dalam array di atas
     Resep.findAll({
       where: {
         id: {
@@ -282,8 +287,9 @@ exports.contentBased = function(recommender) {
           required: true
         }
       ]
-    }).then((data) => {
-      res.status(200).json(success("Success", data, "200"));
+    }).then(async (data) => {
+      const response = await paginationDataResep(data, page, limit);
+      res.status(200).json(success("Success", response, "200"));
     }).catch((err) => {
       res
           .status(500)
