@@ -22,7 +22,7 @@ class ContentBasedRecommender {
   }
 
   setOptions(options = {}) {
-    // validation
+    // validasi
     if ((options.maxVectorSize !== undefined) &&
       (!Number.isInteger(options.maxVectorSize) || options.maxVectorSize <= 0)) {
       throw new Error('The option maxVectorSize should be integer and greater than 0');
@@ -48,13 +48,13 @@ class ContentBasedRecommender {
       console.log(`Total documents: ${documents.length}`);
     }
 
-    // step 1 - preprocess the documents
+    // step 1 - sebelum proses dokumen
     const preprocessDocs = this._preprocessDocuments(documents, this.options);
 
-    // step 2 - create document vectors
+    // step 2 - membuat vektor dokumen
     const docVectors = this._produceWordVectors(preprocessDocs, this.options);
 
-    // step 3 - calculate similarities
+    // step 3 - kalkulasi kesamaan
     this.data = this._calculateSimilarities(docVectors, this.options);
   }
 
@@ -66,15 +66,15 @@ class ContentBasedRecommender {
       console.log(`Total documents: ${documents.length}`);
     }
 
-    // step 1 - preprocess the documents
+    // step 1 - sebelum proses dokumen
     const preprocessDocs = this._preprocessDocuments(documents, this.options);
     const preprocessTargetDocs = this._preprocessDocuments(targetDocuments, this.options);
 
-    // step 2 - create document vectors
+    // step 2 - membuat vektor dokumen
     const docVectors = this._produceWordVectors(preprocessDocs, this.options);
     const targetDocVectors = this._produceWordVectors(preprocessTargetDocs, this.options);
 
-    // step 3 - calculate similarities
+    // step 3 - kalkulasi kesamaan
     this.data = this._calculateSimilaritiesBetweenTwoVectors(docVectors, targetDocVectors, this.options);
   }
 
@@ -86,8 +86,8 @@ class ContentBasedRecommender {
     for (let i = 0; i < documents.length; i += 1) {
       const document = documents[i];
 
-      if (!_.has(document, 'id') || !_.has(document, 'bahanBahan')) {
-        throw new Error('Documents should be have fields id and bahanBahan');
+      if (!_.has(document, 'id') || !_.has(document, 'caraPembuatan')) {
+        throw new Error('Documents should be have fields id and caraPembuatan');
       }
 
       if (_.has(document, 'tokens') || _.has(document, 'vector')) {
@@ -123,15 +123,13 @@ class ContentBasedRecommender {
     this.data = data;
   }
 
-  // pseudo private methods
-
   _preprocessDocuments(documents, options) {
     if (options.debug) {
       console.log('Preprocessing documents');
     }
 
     const processedDocuments = documents.map(item => {
-      let tokens = this._getTokensFromString(item.bahanBahan);
+      let tokens = this._getTokensFromString(item.caraPembuatan);
       return {
         id: item.id,
         tokens,
@@ -142,34 +140,25 @@ class ContentBasedRecommender {
   }
 
   _getTokensFromString(string) {
-    // remove html and to lower case
     const tmpString = striptags(string, [], ' ')
       .toLowerCase();
 
-    // tokenize the string
     const tokens = tokenizer.tokenize(tmpString);
 
-    // get unigrams
     const unigrams = sw.removeStopwords(tokens)
       .map(unigram => PorterStemmer.stem(unigram));
 
-    // get bigrams
     const bigrams = NGrams.bigrams(tokens)
       .filter(bigram =>
-        // filter terms with stopword
         (bigram.length === sw.removeStopwords(bigram).length))
       .map(bigram =>
-        // stem the tokens
         bigram.map(token => PorterStemmer.stem(token))
           .join('_'));
-
-    // get trigrams
+          
     const trigrams = NGrams.trigrams(tokens)
       .filter(trigram =>
-        // filter terms with stopword
         (trigram.length === sw.removeStopwords(trigram).length))
       .map(trigram =>
-        // stem the tokens
         trigram.map(token => PorterStemmer.stem(token))
           .join('_'));
 
@@ -177,14 +166,14 @@ class ContentBasedRecommender {
   }
 
   _produceWordVectors(processedDocuments, options) {
-    // process tfidf
+    // proses tfidf
     const tfidf = new TfIdf();
 
     processedDocuments.forEach((processedDocument) => {
       tfidf.addDocument(processedDocument.tokens);
     });
 
-    // create word vector
+    // membuat vektor kata
     const documentVectors = [];
 
     for (let i = 0; i < processedDocuments.length; i += 1) {
@@ -228,7 +217,6 @@ class ContentBasedRecommender {
       ...this.initializeDataHash(targetDocumentVectors)
     };
 
-    // calculate the similar scores
     for (let i = 0; i < documentVectors.length; i += 1) {
       if (options.debug) console.log(`Calculating similarity score for document ${i}`);
 
@@ -302,7 +290,6 @@ class ContentBasedRecommender {
   }
 
   orderDocuments(data, options) {
-    // finally sort the similar documents by descending order
     Object.keys(data)
       .forEach((id) => {
         data[id].sort((a, b) => b.score - a.score);
