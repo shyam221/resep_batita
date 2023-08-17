@@ -1,9 +1,14 @@
 const db = require("../model");
 const fs = require("fs");
 const Resep = db.resep;
+const DetailResep = db.detailResep
+const BahanResep = db.bahanResep
 const Favorite = db.favorites;
 const Op = db.Sequelize.Op;
 const literal = db.Sequelize.literal
+const {
+  detailResepRes
+} = require("../response/resep.response");
 
 const {
   success,
@@ -56,11 +61,24 @@ exports.updateResep = (req, res) => {
 exports.getResep = (req, res) => {
   const resepId = req.params.id;
 
-  Resep.findByPk(resepId)
-    .then((data) => {
+  Resep.findByPk(resepId, {
+    include: [
+      {
+        model: DetailResep,
+        required: true,
+        include: [
+            {
+              model: BahanResep
+            }
+        ]
+      }
+    ]
+  })
+    .then(async (data) => {
       let imgBase64 = Buffer.from(data.image).toString("base64");
-      const response = data;
-      response.image = `data:image/jpeg;base64,${imgBase64}`;
+      const image = await `data:image/jpeg;base64,${imgBase64}`;
+      
+      const response = detailResepRes(data, image);
       res.status(200).json(success("Success", response, "200"));
     })
     .catch((err) => {
@@ -96,26 +114,16 @@ exports.getResepFavorited = (req, res) => {
           },
         },
       },
-    ],
-    attributes: [
-      "id",
-      "nama",
-      "bahanBahan",
-      "caraPembuatan",
-      "energi",
-      "karbohidrat",
-      "lemak",
-      "protein",
-      "porsi",
-      "image",
-      "umur",
-      "beratBadan"
+      {
+        model: DetailResep,
+        required: true
+      }
     ],
     limit,
     offset,
   })
-    .then((data) => {
-      const response = paginationData(data, page, limit);
+    .then(async (data) => {
+      const response = await paginationData(data, page, limit);
       res.status(200).json(success("Success", response, "200"));
     })
     .catch((err) => {
@@ -137,35 +145,27 @@ exports.getAllResep = (req, res) => {
         },
       }
     },
-    include: {
-      model: Favorite,
-      required: false,
-      where: userId
-        ? {
-            userId: userId,
-          }
-        : {},
-      attributes: ["userId"],
-    },
-    attributes: [
-      "id",
-      "nama",
-      "bahanBahan",
-      "caraPembuatan",
-      "energi",
-      "karbohidrat",
-      "lemak",
-      "protein",
-      "porsi",
-      "image",
-      "umur",
-      "beratBadan"
+    include: [
+      {
+        model: Favorite,
+        required: false,
+        where: userId
+          ? {
+              userId: userId,
+            }
+          : {},
+        attributes: ["userId"],
+      },
+      {
+        model: DetailResep,
+        required: true
+      }
     ],
     limit,
     offset,
   })
-    .then((data) => {
-      const response = paginationData(data, page, limit);
+    .then(async (data) => {
+      const response = await paginationData(data, page, limit);
       res.status(200).json(success("Success", response, "200"));
     })
     .catch((err) => {
@@ -175,6 +175,54 @@ exports.getAllResep = (req, res) => {
     });
 };
 
+exports.contentBased = function(recommender) {
+  return async function(req, res) {
+    const resepId = req.params.resepId
+    const obj = recommender.export
+    const size = await Resep.count()
+    if (obj.data) {
+      if (size > obj.data.length) {
+        Resep.findAll().then((data) => {
+          recommender.train(data)
+        })
+      }
+    } else {
+      await Resep.findAll({
+        raw: true
+      }).then((data) => {
+        console.log(data)
+        recommender.train(data)
+      })
+    }
+    const similarDocuments = await recommender.getSimilarDocuments(resepId, 0, 10);
+    console.log(similarDocuments)
+    const idSimilarDocument = []
+    await similarDocuments.forEach(element => {
+      idSimilarDocument.push(element.id)
+    });
+
+    Resep.findAll({
+      where: {
+        id: {
+          [Op.in]: idSimilarDocument
+        }
+      },
+      include: [
+        {
+          model: DetailResep,
+          required: true
+        }
+      ]
+    }).then((data) => {
+      res.status(200).json(success("Success", data, "200"));
+    }).catch((err) => {
+      res
+          .status(500)
+          .json(success("Terjadi error saat " + err.message, "", 500));
+    })
+  }
+}
+
 exports.getRekomendasiResep = (req, res) => {
   const { page, size, userId, umur, beratBadan } = req.query;
   const { limit, offset } = getPagination(page - 1, size);
@@ -183,47 +231,39 @@ exports.getRekomendasiResep = (req, res) => {
     where: {
       [Op.or]: [
         beratBadan ? {
-          beratBadan: {
+          '$detail_resep.beratBadan$': {
             [Op.lte]: beratBadan
           }
         } : {},
         umur ? {
           [Op.and]: [
-              db.Sequelize.literal(`CONVERT(SUBSTRING_INDEX(umur, '-', 1), UNSIGNED) <= ${umur}`),
-              db.Sequelize.literal(`CONVERT(SUBSTRING_INDEX(umur, '-', -1), UNSIGNED) >= ${umur}`)
+              db.Sequelize.literal(`CONVERT(SUBSTRING_INDEX(detail_resep.umur, '-', 1), UNSIGNED) <= ${umur}`),
+              db.Sequelize.literal(`CONVERT(SUBSTRING_INDEX(detail_resep.umur, '-', -1), UNSIGNED) >= ${umur}`)
             ]
         } : {}
       ]
     },
-    include: {
-      model: Favorite,
-      required: false,
-      where: userId
-        ? {
-            userId: userId,
-          }
-        : {},
-      attributes: ["userId"],
-    },
-    attributes: [
-      "id",
-      "nama",
-      "bahanBahan",
-      "caraPembuatan",
-      "energi",
-      "karbohidrat",
-      "lemak",
-      "protein",
-      "porsi",
-      "image",
-      "umur",
-      "beratBadan"
+    include: [
+      {
+        model: Favorite,
+        required: false,
+        where: userId
+          ? {
+              userId: userId,
+            }
+          : {},
+        attributes: ["userId"],
+      },
+      {
+        model: DetailResep,
+        required: true
+      }
     ],
     limit,
     offset,
   })
-    .then((data) => {
-      const response = paginationData(data, page, limit);
+    .then(async (data) => {
+      const response = await paginationData(data, page, limit);
       res.status(200).json(success("Success", response, "200"));
     })
     .catch((err) => {

@@ -35,6 +35,12 @@ module.exports = (sequelize, Sequelize) => {
     },
     otpPassword: {
       type: Sequelize.STRING
+    },
+    pertanyaanUnik: {
+      type: Sequelize.STRING
+    },
+    jawabanPertanyaanUnik: {
+      type: Sequelize.STRING
     }
   })
   return Users

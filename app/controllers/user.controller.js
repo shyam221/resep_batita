@@ -32,7 +32,9 @@ exports.register = (req, res) => {
     beratBadan: req.body.beratBadan,
     otp: otp,
     isActive: roleUser === 'ADMIN' ? true : false,
-    tanggalLahir: moment(req.body.tanggalLahir, 'DD/MM/YYYY').format('YYYY/MM/DD')
+    tanggalLahir: moment(req.body.tanggalLahir, 'DD/MM/YYYY').format('YYYY/MM/DD'),
+    pertanyaanUnik: req.body.pertanyaanUnik,
+    jawabanPertanyaanUnik: req.body.jawabanPertanyaanUnik
   };
   
   User.create(register)
@@ -268,19 +270,28 @@ exports.requestResetPassword = async (req, res) => {
 
 exports.verifyOtpResetPassword = async (req, res) => {
   const body = req.body
-  if (!body.email || !body.code) {
+  if (!body.email || !body.jawabanPertanyaanUnik) {
     res.status(400).json(success("Not found", null, 400));
     return;
   }
   const user = await User
-    .findOne({ where: { email: body.email, otpPassword: body.code } })
+    .findOne({ where: { 
+        email: body.email, 
+        pertanyaanUnik: {
+          [Op.like]: '%' + body.pertanyaanUnik + '%'
+        },
+        jawabanPertanyaanUnik: {
+          [Op.like]: '%' + body.jawabanPertanyaanUnik + '%'
+        } 
+      }
+    })
   if (user === null) {
     res
       .status(400)
       .json(success("Kode Verifikasi Salah", "", 400));
     return;
   } else {
-    User.update({ password: body.password, otpPassword: '' }, 
+    User.update({ password: body.password }, 
       { where: { id: user.id } })
         .then((_) => {
           res.status(200).json(success("Success", "Reset password berhasil.", 200))
