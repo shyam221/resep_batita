@@ -41,9 +41,9 @@ exports.listDataResep = async (data) => {
   for (a of data) {
     let o = a
     if (a.image) {
-      // let imgBase64 = Buffer.from(a.image).toString('base64');
-      // // imgBase64 = `data:image/jpeg;base64,${imgBase64}`;
-      // o.image = `data:image/jpeg;base64,${imgBase64}`
+      let imgBase64 = Buffer.from(a.image).toString('base64');
+      // imgBase64 = `data:image/jpeg;base64,${imgBase64}`;
+      o.image = `data:image/jpeg;base64,${imgBase64}`
     }
     if (a.favorites) {
       let isFavorited = a.favorites.length > 0 ? true : false
