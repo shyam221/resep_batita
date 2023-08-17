@@ -79,6 +79,7 @@ class ContentBasedRecommender {
   }
 
   validateDocuments(documents) {
+    console.log(documents)
     if (!_.isArray(documents)) {
       throw new Error('Documents should be an array of objects');
     }
