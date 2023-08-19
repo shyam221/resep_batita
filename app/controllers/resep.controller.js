@@ -248,6 +248,7 @@ exports.getAllResep = (req, res) => {
 exports.contentBased = function(recommender) {
   return async function(req, res) {
     const resepId = req.params.resepId
+    const userId = req.params.userId
     const obj = recommender.export
     const size = await Resep.count()
     // mengecek data yang tersimpan di content based
@@ -294,6 +295,16 @@ exports.contentBased = function(recommender) {
         }
       },
       include: [
+        {
+          model: Favorite,
+          required: false,
+          where: userId
+            ? {
+                userId: userId,
+              }
+            : {},
+          attributes: ["userId"],
+        },
         {
           model: DetailResep,
           required: true
