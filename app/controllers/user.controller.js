@@ -9,7 +9,7 @@ const { success,
   paginationData,} = require("../base/response.base");
 const { where } = require('sequelize');
 
-exports.register = (req, res) => {
+exports.register = async (req, res) => {
   if (!req.body.nomor && !req.body.password) {
     res
       .status(400)
@@ -22,7 +22,7 @@ exports.register = (req, res) => {
   } else {
     roleUser = 'USER'
   }
-  const otp = generateOTP()
+  const otp = await generateOTP()
   const register = {
     nama: req.body.nama,
     password: req.body.password,
@@ -39,7 +39,6 @@ exports.register = (req, res) => {
   
   User.create(register)
     .then(async (data) => {
-      const otp = generateOTP()
       await emailOtp(data.nama, otp, data.email)
       res.status(200).json(success("Success", data, "200"));
     })
