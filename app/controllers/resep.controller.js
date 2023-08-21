@@ -42,7 +42,7 @@ exports.createResep = async (req, res) => {
           
         }).then(async (detail) => {
           const bahanBahan = []
-          for (const bahan of JSON.parse(body.bahanBahan)) {
+          for (const bahan of body.bahanBahan) {
             const bahanUpdate = bahan
             bahanUpdate.detail_resep_id = detail.id
             bahanBahan.push(bahanUpdate)
@@ -98,7 +98,7 @@ exports.updateResep = async (req, res) => {
         }
       }).then(async (detail) => {
         const bahanBahan = []
-        for (const bahan of JSON.parse(body.bahanBahan)) {
+        for (const bahan of body.bahanBahan) {
           const bahanUpdate = bahan
           bahanUpdate.detail_resep_id = req.body.detailResepId
           bahanBahan.push(bahanUpdate)
