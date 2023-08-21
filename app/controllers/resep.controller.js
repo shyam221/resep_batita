@@ -42,9 +42,10 @@ exports.createResep = async (req, res) => {
           
         }).then(async (detail) => {
           const bahanBahan = []
+          const idDetail = detail.id
           for (const bahan of body.bahanBahan) {
             const bahanUpdate = bahan
-            bahanUpdate.detail_resep_id = detail.id
+            bahanUpdate.detail_resep_id = idDetail
             bahanBahan.push(bahanUpdate)
           }
           BahanResep.bulkCreate(bahanBahan)
