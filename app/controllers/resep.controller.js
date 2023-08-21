@@ -42,9 +42,10 @@ exports.createResep = async (req, res) => {
           
         }).then(async (detail) => {
           const bahanBahan = []
-          for (const bahan of req.body.bahanBahan) {
-            const bahanUpdate = bahan
+          for (const bahan of JSON.parse(body.bahanBahan)) {
+            const bahanUpdate = {}
             bahanUpdate.detail_resep_id = detail.id
+            bahanUpdate.bahan_bahan = bahan
             bahanBahan.push(bahanUpdate)
           }
           BahanResep.bulkCreate(bahanBahan)
@@ -98,9 +99,10 @@ exports.updateResep = async (req, res) => {
         }
       }).then(async (detail) => {
         const bahanBahan = []
-        for (const bahan of req.body.bahanBahan) {
-          const bahanUpdate = bahan
-          bahanUpdate.detail_resep_id = req.body.detailResepId
+        for (const bahan of JSON.parse(body.bahanBahan)) {
+          const bahanUpdate = {}
+          bahanUpdate.detail_resep_id = detail.id
+          bahanUpdate.bahan_bahan = bahan
           bahanBahan.push(bahanUpdate)
         }
         await BahanResep.destroy({
