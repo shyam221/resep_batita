@@ -2,6 +2,7 @@ const db = require("../model");
 const Favorite = db.favorites;
 const User = db.users;
 const Resep = db.resep;
+const DetailResep = db.detailResep
 
 const Op = db.Sequelize.Op;
 const {
@@ -78,7 +79,14 @@ exports.findAll = (req, res) => {
         model: Resep,
         required: true,
         as: "resep",
-        attributes: ["nama", "energi", "umur", "beratBadan"],
+        attributes: ["nama"],
+        include: [
+          {
+            model: DetailResep,
+            required: true,
+            attributes: ['energi', "umur", "beratBadan"]
+          }
+        ]
       },
     ],
     where: {
@@ -94,8 +102,8 @@ exports.findAll = (req, res) => {
     limit,
     offset,
   })
-    .then((data) => {
-      const response = paginationData(data, page, limit);
+    .then(async (data) => {
+      const response = await paginationData(data, page, limit);
       res.status(200).json(success("Success", response, "200"));
     })
     .catch((err) => {

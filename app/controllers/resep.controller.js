@@ -36,6 +36,7 @@ exports.createResep = async (req, res) => {
           lemak: body.lemak,
           protein: body.protein,
           porsi: body.porsi,
+          sumber: body.sumber,
           umur: body.umur,
           beratBadan: body.beratBadan,
           resepId: data.id,
@@ -89,6 +90,7 @@ exports.updateResep = async (req, res) => {
         protein: body.protein,
         porsi: body.porsi,
         umur: body.umur,
+        sumber: body.sumber,
         beratBadan: body.beratBadan,
         resepId: data.id,
         
@@ -397,6 +399,7 @@ const bodyReq = async (req) => {
     lemak: req.body.lemak,
     protein: req.body.protein,
     porsi: req.body.porsi,
+    sumber: req.body.sumber,
     umur: req.body.umur,
     beratBadan: req.body.beratBadan
   };

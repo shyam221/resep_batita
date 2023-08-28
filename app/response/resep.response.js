@@ -46,6 +46,7 @@ exports.detailResepRes = (resep, image) => {
   response.porsi = resep.detail_resep.porsi
   response.umur = resep.detail_resep.umur
   response.beratBadan = resep.detail_resep.beratBadan
+  response.sumber = resep.detail_resep.sumber
   response.isFavorited = resep.isFavorited
   response.favorites = resep.favorites
   response.caraPembuatan = resep.detail_resep.caraPembuatan
