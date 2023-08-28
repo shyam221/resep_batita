@@ -23,6 +23,9 @@ module.exports = (sequelize, Sequelize) => {
     },
     beratBadan: {
       type: Sequelize.STRING
+    },
+    sumber: {
+      type: Sequelize.STRING
     }
   })
   return DetailResep
