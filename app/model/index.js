@@ -30,9 +30,9 @@ db.users.hasMany(db.favorites, { foreignKey: 'userId' })
 db.favorites.belongsTo(db.users, { foreignKey: 'userId' })
 db.resep.hasMany(db.favorites, { foreignKey: 'resepId' })
 db.favorites.belongsTo(db.resep, { foreignKey: 'resepId' })
-db.bahanResep.belongsTo(db.detailResep, { foreignKey: 'detail_resep_id', as: 'bahanResep' })
+db.bahanResep.belongsTo(db.detailResep, { foreignKey: 'resep_id', as: 'bahanResep' })
 db.detailResep.belongsTo(db.resep, { foreignKey: 'resepId', as: 'detailResep' })
-db.detailResep.hasMany(db.bahanResep, { foreignKey: 'detail_resep_id' })
+db.resep.hasMany(db.bahanResep, { foreignKey: 'resep_id' })
 db.resep.hasOne(db.detailResep)
 
 module.exports = db;

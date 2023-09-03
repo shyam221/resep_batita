@@ -37,7 +37,8 @@ exports.createResep = async (req, res) => {
           protein: body.protein,
           porsi: body.porsi,
           sumber: body.sumber,
-          umur: body.umur,
+          untukUmur: body.untukUmur,
+          sampaiUmur: body.sampaiUmur,
           beratBadan: body.beratBadan,
           resepId: data.id,
           
@@ -45,8 +46,8 @@ exports.createResep = async (req, res) => {
           const bahanBahan = []
           for (const bahan of JSON.parse(body.bahanBahan)) {
             const bahanUpdate = {}
-            bahanUpdate.detail_resep_id = detail.id
             bahanUpdate.bahan_bahan = bahan
+            bahanUpdate.resep_id = data.id
             bahanBahan.push(bahanUpdate)
           }
           BahanResep.bulkCreate(bahanBahan)
@@ -82,7 +83,6 @@ exports.updateResep = async (req, res) => {
     }
   })
     .then((data) => {
-      console.log(data)
       DetailResep.update({
         caraPembuatan: body.caraPembuatan,
         energi: body.energi,
@@ -90,7 +90,8 @@ exports.updateResep = async (req, res) => {
         lemak: body.lemak,
         protein: body.protein,
         porsi: body.porsi,
-        umur: body.umur,
+        untukUmur: body.untukUmur,
+        sampaiUmur: body.sampaiUmur,
         sumber: body.sumber,
         beratBadan: body.beratBadan,
         resepId: data.id,
@@ -103,13 +104,12 @@ exports.updateResep = async (req, res) => {
         const bahanBahan = []
         for (const bahan of JSON.parse(body.bahanBahan)) {
           const bahanUpdate = {}
-          bahanUpdate.detail_resep_id = detail.id
+          bahanUpdate.resep_id = req.params.id
           bahanUpdate.bahan_bahan = bahan
-          bahanBahan.push(bahanUpdate)
         }
         await BahanResep.destroy({
           where: {
-            detail_resep_id: req.body.detailResepId
+            resep_id: req.params.id
           }
         })
         BahanResep.bulkCreate(bahanBahan)
@@ -140,11 +140,9 @@ exports.getResep = (req, res) => {
       {
         model: DetailResep,
         required: true,
-        include: [
-            {
-              model: BahanResep
-            }
-        ]
+      },
+      {
+        model: BahanResep
       }
     ]
   })
@@ -339,8 +337,8 @@ exports.getRekomendasiResep = (req, res) => {
         } : {},
         umur ? {
           [Op.and]: [
-              db.Sequelize.literal(`CONVERT(SUBSTRING_INDEX(detail_resep.umur, '-', 1), UNSIGNED) <= ${umur}`),
-              db.Sequelize.literal(`CONVERT(SUBSTRING_INDEX(detail_resep.umur, '-', -1), UNSIGNED) >= ${umur}`)
+              db.Sequelize.literal(`SUBSTRING_INDEX(detail_resep.untukUmur, ' ', 1) <= ${umur}`),
+              db.Sequelize.literal(`SUBSTRING_INDEX(detail_resep.sampaiUmur, ' ', 1) >= ${umur}`)
             ]
         } : {}
       ]
@@ -402,7 +400,8 @@ const bodyReq = async (req) => {
     protein: req.body.protein,
     porsi: req.body.porsi,
     sumber: req.body.sumber,
-    umur: req.body.umur,
+    untukUmur: req.body.untukUmur,
+    sampaiUmur: req.body.sampaiUmur,
     beratBadan: req.body.beratBadan
   };
   if (req.file) {

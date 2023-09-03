@@ -42,6 +42,8 @@ module.exports = (sequelize, Sequelize) => {
     jawabanPertanyaanUnik: {
       type: Sequelize.STRING
     }
+  }, {
+    tableName: 'pengguna'
   })
   return Users
 }

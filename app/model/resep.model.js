@@ -9,6 +9,8 @@ module.exports = (sequelize, Sequelize) => {
     imageName: {
       type: Sequelize.STRING
     }
+  }, {
+    tableName: 'resep'
   })
   return Resep
 }
