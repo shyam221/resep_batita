@@ -1,10 +1,5 @@
 const express = require("express");
 const cors = require("cors");
-const ContentBasedRecommender = require('./app/algorithm/ContentBasedRecommender')
-const recommender = new ContentBasedRecommender({
-  minScore: 0.07,
-  maxSimilarDocuments: 100
-});
 
 global.__basedir = __dirname;
 
@@ -40,7 +35,7 @@ app.get("/", (req, res) => {
 require('./app/routes/user.router')(app)
 require('./app/routes/favorite.router')(app)
 // require('./app/routes/spoonacular.router')(app)
-require('./app/routes/resep.router')(app, recommender)
+require('./app/routes/resep.router')(app)
 require('./app/routes/admin.router')(app)
 
 // set port, listen for requests
