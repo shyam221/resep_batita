@@ -7,7 +7,7 @@ exports.resepRes = (resep) => {
   response.lemak = resep.detail_resep.lemak
   response.protein = resep.detail_resep.protein
   response.porsi = resep.detail_resep.porsi
-  response.umur = resep.detail_resep.umur
+  response.umur = resep.detail_resep.untukUmur + ' - ' + resep.detail_resep.sampaiUmur
   response.beratBadan = resep.detail_resep.beratBadan
   response.isFavorited = resep.isFavorited
   response.favorites = resep.favorites
@@ -25,7 +25,9 @@ exports.resepResDetail = (resep) => {
   response.lemak = resep.detail_resep.lemak
   response.protein = resep.detail_resep.protein
   response.porsi = resep.detail_resep.porsi
-  response.umur = resep.detail_resep.umur
+  response.umur = resep.detail_resep.untukUmur + ' - ' + resep.detail_resep.sampaiUmur
+  response.untukUmur = resep.detail_resep.untukUmur
+  response.sampaiUmur = resep.detail_resep.sampaiUmur
   response.beratBadan = resep.detail_resep.beratBadan
   response.isFavorited = resep.isFavorited
   response.favorites = resep.favorites
@@ -36,6 +38,7 @@ exports.resepResDetail = (resep) => {
 }
 
 exports.detailResepRes = (resep, image) => {
+  console.log(resep)
   const response = {}
   response.id = resep.id
   response.nama = resep.nama
@@ -44,7 +47,9 @@ exports.detailResepRes = (resep, image) => {
   response.lemak = resep.detail_resep.lemak
   response.protein = resep.detail_resep.protein
   response.porsi = resep.detail_resep.porsi
-  response.umur = resep.detail_resep.umur
+  response.umur = resep.detail_resep.untukUmur + ' - ' + resep.detail_resep.sampaiUmur
+  response.untukUmur = resep.detail_resep.untukUmur
+  response.sampaiUmur = resep.detail_resep.sampaiUmur
   response.beratBadan = resep.detail_resep.beratBadan
   response.sumber = resep.detail_resep.sumber
   response.isFavorited = resep.isFavorited
@@ -54,7 +59,7 @@ exports.detailResepRes = (resep, image) => {
 
   const ingredients = []
 
-  for (bahan of resep.detail_resep.bahan_reseps ) {
+  for (bahan of resep.bahan_reseps ) {
     ingredients.push(bahan.bahan_bahan)
   }
   

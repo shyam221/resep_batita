@@ -44,7 +44,7 @@ exports.register = async (req, res) => {
     })
     .catch((err) => {
       res
-        .status(500)
+        .status(200)
         .json(success(err.message || "Terjadi error saat ", "", 500));
     });
 };
@@ -133,31 +133,36 @@ exports.login = (req, res) => {
     return;
   }
   User.findOne({ where: { email: req.body.email, password: req.body.password } })
-    .then((data) => {
-      const tanggal = moment(data.tanggalLahir, 'YYYY/MM/DD').format('DD/MM/YYYY')
-      data.tanggalLahir = moment(tanggal, 'DD/MM/YYYY')
-      console.log(tanggal)
-      
-      if (data.fotoProfil) {
-        let imgBase64 = Buffer.from(a.fotoProfil).toString('base64');
-        data.fotoProfil = `data:image/jpeg;base64,${imgBase64}`
+    .then((data) => { 
+      if (data) {
+        const tanggal = moment(data.tanggalLahir, 'YYYY/MM/DD').format('DD/MM/YYYY')
+        data.tanggalLahir = moment(tanggal, 'DD/MM/YYYY')
+
+        if (data.fotoProfil) {
+          let imgBase64 = Buffer.from(a.fotoProfil).toString('base64');
+          data.fotoProfil = `data:image/jpeg;base64,${imgBase64}`
+        }
+        if (data.isActive)
+          res.status(200).json(success("Success", data, "200"));
+        else
+          res.status(200).json(success("User belum aktif", null, 202));
+      } else {
+        res
+        .status(200)
+        .json(success('Email atau Password salah', null, 404));
       }
-      if (data.isActive)
-        res.status(200).json(success("Success", data, "200"));
-      else
-        res.status(200).json(success("User belum aktif", null, 202));
     })
     .catch((err) => {
       console.log(err)
       res
-        .status(500)
-        .json(success(err.message || "Terjadi error saat ", "", 500));
+        .status(200)
+        .json(success(err.message || "Terjadi error saat ", null, 500));
     });
 };
 
 exports.loginAdmin = (req, res) => {
   if (!req.body.email && !req.body.password) {
-    res.status(400).json(success("Email & Password salah", "", 400));
+    res.status(400).json(success("Email & Password salah", null, 400));
     return;
   }
   User.findOne({ where: { email: req.body.email, password: req.body.password } })

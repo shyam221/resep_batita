@@ -3,6 +3,8 @@ module.exports = (sequelize, Sequelize) => {
     bahan_bahan: {
       type: Sequelize.STRING
     }
+  }, {
+    tableName: 'bahan_resep'
   });
   return BahanResep
 }

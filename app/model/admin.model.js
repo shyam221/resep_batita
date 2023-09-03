@@ -9,6 +9,8 @@ module.exports = (sequelize, Sequelize) => {
     password: {
       type: Sequelize.STRING
     }
+  }, {
+    tableName: 'admin'
   })
   return Admin
 }

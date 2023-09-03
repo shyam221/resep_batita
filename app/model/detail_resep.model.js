@@ -18,7 +18,10 @@ module.exports = (sequelize, Sequelize) => {
     porsi: {
       type: Sequelize.INTEGER
     },
-    umur: {
+    untukUmur: {
+      type: Sequelize.STRING
+    },
+    sampaiUmur: {
       type: Sequelize.STRING
     },
     beratBadan: {
@@ -27,6 +30,8 @@ module.exports = (sequelize, Sequelize) => {
     sumber: {
       type: Sequelize.STRING
     }
+  }, {
+    tableName: 'detail_resep'
   })
   return DetailResep
 }
